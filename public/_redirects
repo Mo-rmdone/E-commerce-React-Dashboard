@@ -1,3 +1,0 @@
-# Single-page app: every path resolves to the shell, which then renders the
-# requested page from client state. 200 (rewrite), not 301, so the URL is kept.
-/*  /index.html  200

@@ -112,7 +112,12 @@ Order ID. The build fails rather than emitting a silently wrong dataset.
 ## Deploying to Cloudflare
 
 The app is fully static. `wrangler.jsonc` configures Workers Static Assets with
-SPA fallback.
+SPA fallback via `not_found_handling: "single-page-application"`.
+
+> There is deliberately **no `_redirects` file**. Workers Static Assets rejects
+> the usual `/* /index.html 200` SPA rule as an infinite loop, because its own
+> html_handling already strips `/index` and the rewrite re-triggers itself. The
+> `not_found_handling` setting above does the same job natively.
 
 ### Option A — Wrangler CLI
 
@@ -137,6 +142,25 @@ No environment variables or secrets are needed.
 `index.html` uncached, so a deploy reaches everyone immediately.
 
 ---
+
+## A note on `npm audit`
+
+`npm audit` reports one high-severity advisory against **`xlsx`** (SheetJS):
+prototype pollution and ReDoS, with `fixAvailable: false` because SheetJS
+publishes current releases from its own CDN rather than npm.
+
+It does not affect this application:
+
+- `xlsx` is a **devDependency**, used only by `scripts/build-dataset.mjs`
+- It never reaches the browser. The app fetches the pre-built
+  `dataset.json`; verified by grepping the production bundle for SheetJS
+- Both advisories need attacker-controlled input. The only input is one
+  committed workbook in `data/`
+
+If you would rather not have it installed at all, delete the `xlsx`
+devDependency and the `etl` script: `public/data/dataset.json` is committed, so
+`npm run build` works without either. You would only lose the ability to
+regenerate the dataset from the Excel.
 
 ## Licence / attribution
 
