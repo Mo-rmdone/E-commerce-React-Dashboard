@@ -1,0 +1,124 @@
+/* ---------------------------------------------------------------- delta */
+
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  white-space: nowrap;
+}
+.delta--pos {
+  color: var(--c-pos);
+}
+.delta--neg {
+  color: var(--c-neg);
+}
+.delta--none {
+  color: var(--c-muted);
+}
+.delta__suffix {
+  color: var(--c-muted);
+  font-weight: 400;
+  font-size: var(--fs-xs);
+}
+
+/* ----------------------------------------------------------- empty state */
+
+.empty {
+  flex: 1;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  padding: var(--sp-6) var(--sp-4);
+  text-align: center;
+  color: var(--c-faint);
+}
+.empty__title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--c-ink-2);
+  margin-top: var(--sp-1);
+}
+.empty__msg {
+  font-size: var(--fs-sm);
+  color: var(--c-muted);
+  max-width: 34ch;
+  line-height: 1.5;
+}
+.empty__action {
+  margin-top: var(--sp-2);
+}
+
+/* --------------------------------------------------------------- skeleton */
+
+.skeleton {
+  position: relative;
+  width: 100%;
+  border-radius: var(--r-sm);
+  background: var(--c-surface-2);
+  overflow: hidden;
+}
+.skeleton__shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--c-surface-3) 45%,
+    transparent 90%
+  );
+  animation: shimmer 1.4s infinite;
+}
+@keyframes shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton__shimmer {
+    animation: none;
+  }
+}
+
+/* --------------------------------------------------------------- microbar */
+
+.mbar {
+  display: block;
+  width: 100%;
+  height: 5px;
+  border-radius: var(--r-pill);
+  background: var(--c-track);
+  overflow: hidden;
+}
+.mbar__fill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  border-radius: var(--r-pill);
+  transition: transform var(--t-slow) var(--ease);
+}
+@media (prefers-reduced-motion: reduce) {
+  .mbar__fill {
+    transition: none;
+  }
+}
+.mbar__fill--accent {
+  background: var(--c-accent);
+}
+.mbar__fill--pos {
+  background: var(--c-pos);
+}
+.mbar__fill--neg {
+  background: var(--c-neg);
+}
+.mbar__fill--neutral {
+  background: var(--c-neutral);
+}

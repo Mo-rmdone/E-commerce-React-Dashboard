@@ -1,0 +1,122 @@
+.detail__sub {
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  margin-top: 3px;
+}
+
+.detail__empty {
+  font-size: var(--fs-sm);
+  color: var(--c-muted);
+  line-height: 1.6;
+  padding: var(--sp-6) 0;
+  text-align: center;
+}
+
+.detail__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  background: var(--c-rule-soft);
+  border: 1px solid var(--c-rule-soft);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.detail__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--c-surface);
+}
+.detail__stat-val {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--c-ink);
+}
+.detail__stat-note {
+  font-size: 9.5px;
+  color: var(--c-faint);
+}
+
+.detail__block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.detail__block-head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  justify-content: space-between;
+}
+.detail__h {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: var(--ls-tight);
+}
+.detail__note {
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+  color: var(--c-muted);
+}
+
+.detail__spark {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--c-surface-2);
+  border-radius: var(--r-sm);
+}
+.detail__spark-cap {
+  font-size: var(--fs-micro);
+  color: var(--c-muted);
+}
+
+.detail__list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.detail__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 84px 74px;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.detail__item-label {
+  font-size: var(--fs-xs);
+  color: var(--c-ink-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.detail__item-bar {
+  height: 5px;
+  border-radius: var(--r-pill);
+  background: var(--c-track);
+  overflow: hidden;
+}
+.detail__item-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  transition: width var(--t-slow) var(--ease);
+}
+.detail__item-val {
+  font-size: var(--fs-xs);
+  color: var(--c-ink-2);
+  text-align: right;
+}
+
+.detail__foot {
+  flex: none;
+  padding: var(--sp-3) var(--sp-5);
+  border-top: 1px solid var(--c-rule);
+  background: var(--c-surface);
+}
+.detail__foot .btn {
+  width: 100%;
+  justify-content: center;
+}

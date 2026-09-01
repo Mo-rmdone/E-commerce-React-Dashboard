@@ -1,0 +1,404 @@
+/*
+ * Page grids.
+ *
+ * Named grid areas rather than column spans: the layout intent stays readable,
+ * and each breakpoint restates the whole arrangement instead of accumulating
+ * overrides that fight each other.
+ */
+
+.grid--kpi {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--gap-card);
+}
+
+.grid--exec {
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  grid-template-areas:
+    'map   donut'
+    'traj  watch';
+}
+
+.grid--prod {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    'tree    scatter'
+    'rank    heat';
+}
+
+.grid--cust {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  grid-template-areas:
+    'table  alerts'
+    'trend  alerts';
+}
+
+/* ---------------------------------------------------------- section */
+
+/*
+ * A quiet divider between the KPI band and the analytical cards. It is a label,
+ * not a rule: the whitespace does the separating.
+ */
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  margin-bottom: calc(var(--gap-card) * -1 + var(--sp-2));
+}
+.section-head__title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-ink);
+}
+.section-head__note {
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+}
+
+/* -------------------------------------------------------- breadcrumbs */
+
+.crumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-bottom: var(--sp-2);
+  font-size: var(--fs-xs);
+  min-height: 20px;
+}
+.crumbs__seg {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+.crumbs__sep {
+  color: var(--c-faint);
+  padding: 0 1px;
+}
+.crumbs__item {
+  padding: 2px 5px;
+  border-radius: var(--r-xs);
+  color: var(--c-muted);
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition:
+    color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+.crumbs__item:hover {
+  color: var(--c-ink);
+  background: var(--c-surface-3);
+}
+.crumbs__item[aria-current='true'] {
+  color: var(--c-accent);
+  background: var(--c-accent-soft);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------- mini table */
+
+/*
+ * The segment breakdown beneath the donut. Columns are centred under their own
+ * headers and given real horizontal room — at four measures plus a status chip
+ * the previous 4px gutters ran the values together.
+ *
+ * The cells are true table cells. An earlier version set `display: flex` on the
+ * row header, which takes it out of table layout and left its bottom border
+ * stopping short of the column edge; the flex box now lives inside the cell.
+ */
+.minitable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-xs);
+  margin-top: var(--sp-4);
+  table-layout: fixed;
+}
+
+.minitable th,
+.minitable td {
+  padding: 8px var(--sp-2);
+  border-bottom: 1px solid var(--c-rule-soft);
+  font-weight: 400;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.minitable thead th {
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-muted);
+  padding-bottom: 7px;
+  white-space: nowrap;
+}
+
+/* Name takes the slack; the measures share what is left evenly. */
+.minitable thead th:first-child {
+  width: 32%;
+}
+.minitable thead th:not(:first-child) {
+  width: 17%;
+}
+
+.minitable tbody tr:last-child th,
+.minitable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Values sit centred under their own heading, so each column reads as a block. */
+.minitable .n {
+  text-align: center;
+  white-space: nowrap;
+}
+
+.minitable__cell {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.minitable__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  flex: none;
+}
+.minitable__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--c-ink-2);
+}
+
+.val--pos { color: var(--c-pos); }
+.val--neg { color: var(--c-neg); }
+
+/* ------------------------------------------------------- legend toggle */
+
+.legend-toggle {
+  display: inline-flex;
+  gap: 1px;
+}
+.legend-toggle__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px;
+  border-radius: var(--r-xs);
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  white-space: nowrap;
+  transition:
+    color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+.legend-toggle__btn:hover {
+  background: var(--c-surface-2);
+}
+.legend-toggle__btn[aria-pressed='false'] {
+  color: var(--c-faint);
+}
+.legend-toggle__btn[aria-pressed='false'] .chart-legend__swatch {
+  opacity: 0.3;
+}
+.legend-toggle__btn[aria-pressed='true'] {
+  color: var(--c-ink);
+}
+
+/* ---------------------------------------------------------- narrative */
+
+.narrative,
+.depthnote {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--c-rule-soft);
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--c-muted);
+}
+.narrative svg,
+.depthnote svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--c-faint);
+}
+.narrative strong,
+.depthnote strong {
+  color: var(--c-ink);
+  font-weight: 600;
+}
+.depthnote--thin {
+  color: var(--c-warn);
+}
+.depthnote--thin svg {
+  color: var(--c-warn);
+}
+
+/* ------------------------------------------------------ watch summary */
+
+.watchsum {
+  margin-top: var(--sp-2);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-rule-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.watchsum__stat {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.watchsum__note {
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  line-height: 1.5;
+}
+.watchsum__note strong {
+  color: var(--c-ink);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------ impact strip */
+
+.impact {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-rule-soft);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.impact__tiers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  gap: var(--sp-2);
+}
+.impact__tier {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0 5px;
+  align-items: baseline;
+  padding: 5px 8px;
+  background: var(--c-surface-2);
+  border-radius: var(--r-xs);
+}
+.impact__tier-label {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--c-ink);
+  letter-spacing: -0.02em;
+}
+.impact__tier-cap {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-faint);
+}
+.impact__tier-val {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+}
+.impact__note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: var(--fs-xs);
+  line-height: 1.55;
+  color: var(--c-muted);
+}
+.impact__note svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--c-warn);
+}
+.impact__note strong {
+  color: var(--c-ink);
+  font-weight: 600;
+}
+
+/* -------------------------------------------------------- responsive */
+
+@media (max-width: 1500px) {
+  .grid--exec {
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  }
+  .grid--cust {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1080px) {
+  .grid--kpi {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1240px) {
+  .grid--exec {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'map'
+      'traj'
+      'donut'
+      'watch';
+  }
+  .grid--prod {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'tree'
+      'scatter'
+      'rank'
+      'heat';
+  }
+  .grid--cust {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'table'
+      'trend'
+      'alerts';
+  }
+  .page {
+    padding-left: var(--sp-4);
+    padding-right: var(--sp-4);
+  }
+}
+
+@media (max-width: 640px) {
+  .grid--kpi {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Segment table: a status column and a summed total row, so the card answers
+   "is each segment on target" and "are we on target overall" in one read. */
+.minitable tfoot th,
+.minitable tfoot td {
+  border-top: 1px solid var(--c-rule);
+  border-bottom: none;
+  padding-top: 7px;
+  font-weight: 600;
+  color: var(--c-ink);
+}
+.minitable__total .minitable__name {
+  color: var(--c-ink);
+  font-weight: 600;
+}
+.minitable__dot--none {
+  background: transparent;
+  border: 1px dashed var(--c-rule-strong);
+}
+.minitable td .chip {
+  font-size: 10px;
+  padding: 3px 8px;
+}
+/* The chip is inline-flex, so centring the cell text centres the chip too. */
+.minitable td.n .chip {
+  display: inline-flex;
+}

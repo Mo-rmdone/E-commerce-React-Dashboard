@@ -1,0 +1,84 @@
+/*
+ * Executive KPI.
+ *
+ * One clear hierarchy, top to bottom: label, the number, how it moved, what it
+ * was meant to be. The card is a plain white surface with generous padding —
+ * no status rail, no tinted fill, no coloured block. State is carried by the
+ * chip and by the variance figure, both of which pair colour with words.
+ */
+.kpi {
+  display: flex;
+  flex-direction: column;
+  padding: var(--pad-card);
+  background: var(--c-surface);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-1);
+  min-width: 0;
+  min-height: 158px;
+}
+
+.kpi__head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 22px;
+}
+.kpi__status {
+  margin-left: auto;
+}
+
+/* The number is the point of the card, so it gets the space. */
+.kpi__value {
+  font-size: var(--fs-kpi);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--c-ink);
+  margin-top: var(--sp-4);
+}
+
+.kpi__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-top: var(--sp-3);
+  min-height: 24px;
+}
+.kpi__nodelta {
+  font-size: var(--fs-xs);
+  color: var(--c-faint);
+}
+
+.kpi__foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-top: auto;
+  padding-top: var(--sp-4);
+  font-size: var(--fs-xs);
+}
+.kpi__target {
+  color: var(--c-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.kpi__var {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--c-muted);
+}
+.kpi__var--on-target {
+  color: var(--c-pos);
+}
+.kpi__var--at-risk {
+  color: var(--c-warn);
+}
+.kpi__var--off-target {
+  color: var(--c-neg);
+}

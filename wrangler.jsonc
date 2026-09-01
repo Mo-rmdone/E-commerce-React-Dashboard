@@ -1,0 +1,17 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "prism-commercial-intelligence",
+  "compatibility_date": "2026-08-25",
+
+  // A static single-page app: no Worker script, just assets served from the
+  // edge. `single-page-application` returns index.html for unknown paths so a
+  // refresh or a shared deep link never 404s.
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

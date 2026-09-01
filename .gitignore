@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+
+# build output
+dist/
+*.tsbuildinfo
+
+# cloudflare / wrangler
+.wrangler/
+.dev.vars
+.dev.vars.*
+
+# local env
+.env
+.env.*
+!.env.example
+
+# editor / os
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# logs
+npm-debug.log*
+yarn-error.log*
+*.log
+
+# NOTE: public/data/dataset.json and public/countries-110m.json are committed
+# on purpose. They are build inputs for the app, and committing them lets
+# Cloudflare build from a clone without needing to run the Excel ETL.

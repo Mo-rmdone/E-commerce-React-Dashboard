@@ -1,0 +1,392 @@
+.chart-axis-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+}
+.chart-axis-label--alt {
+  fill: var(--c-cat-2);
+}
+
+.chart-ref-label {
+  font-family: var(--font-sans);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  fill: var(--c-reference);
+  text-transform: uppercase;
+}
+
+.chart-series-label {
+  font-family: var(--font-sans);
+  font-size: 10.5px;
+  font-weight: 500;
+  fill: var(--c-ink-2);
+}
+
+.chart-value-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  fill: var(--c-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.chart-hit {
+  cursor: pointer;
+}
+
+.chart-legend {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding: 0 var(--sp-1);
+}
+.chart-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  white-space: nowrap;
+}
+.chart-legend__swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex: none;
+}
+.chart-legend__swatch--line {
+  height: 2px;
+  width: 13px;
+  border-radius: var(--r-pill);
+}
+.chart-legend__swatch--dash {
+  height: 0;
+  width: 13px;
+  border-top: 1.5px dashed var(--c-reference);
+}
+
+.chart-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Marks fade rather than disappear when a cross-filter is active, so the
+   user keeps the shape of the whole while the selection stands out. */
+.mark--dim {
+  opacity: 0.22;
+}
+.mark--sel {
+  opacity: 1;
+}
+
+/* --------------------------------------------------------------- map */
+
+.map__controls {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-sm);
+  padding: 2px;
+  box-shadow: var(--sh-1);
+}
+.map__controls .btn {
+  border-color: transparent;
+}
+
+.map__legend {
+  position: absolute;
+  left: var(--sp-2);
+  bottom: var(--sp-1);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  padding: 3px 7px;
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--c-surface) 82%, transparent);
+  backdrop-filter: blur(3px);
+}
+.map__legend-note {
+  color: var(--c-faint);
+  font-size: var(--fs-micro);
+}
+
+/* ------------------------------------------------------------- donut */
+
+.donut {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 0;
+}
+.donut__total {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  fill: var(--c-ink);
+  letter-spacing: -0.02em;
+}
+.donut__label {
+  font-family: var(--font-sans);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  fill: var(--c-muted);
+}
+
+/* ----------------------------------------------------------- treemap */
+
+.tm__label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  fill: #fff;
+  pointer-events: none;
+}
+.tm__value {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  fill: rgba(255, 255, 255, 0.82);
+  pointer-events: none;
+}
+
+/* ----------------------------------------------------------- heatmap */
+
+.heat {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.heat__scroll {
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+.heat__table {
+  border-collapse: separate;
+  border-spacing: 2px;
+  width: 100%;
+  font-size: var(--fs-xs);
+}
+.heat__corner {
+  text-align: left;
+  padding: 0 var(--sp-2) var(--sp-1) 0;
+  position: sticky;
+  left: 0;
+  background: var(--c-surface);
+  z-index: 2;
+}
+.heat__colhead {
+  padding: 0 0 var(--sp-1);
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+.heat__colbtn {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--c-muted);
+  padding: 2px 4px;
+  border-radius: var(--r-xs);
+  transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+.heat__colbtn:hover {
+  color: var(--c-ink);
+  background: var(--c-surface-3);
+}
+.heat__colbtn[aria-pressed='true'] {
+  color: var(--c-accent);
+  background: var(--c-accent-soft);
+}
+.heat__sort {
+  color: var(--c-faint);
+  padding: 2px;
+  border-radius: var(--r-xs);
+  vertical-align: middle;
+}
+.heat__sort:hover,
+.heat__sort[aria-pressed='true'] {
+  color: var(--c-accent);
+}
+.heat__rowhead {
+  text-align: left;
+  font-weight: 400;
+  position: sticky;
+  left: 0;
+  background: var(--c-surface);
+  z-index: 1;
+  padding-right: var(--sp-2);
+}
+.heat__rowbtn {
+  display: block;
+  font-size: var(--fs-xs);
+  color: var(--c-ink-2);
+  padding: 2px 4px;
+  border-radius: var(--r-xs);
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+.heat__rowbtn:hover {
+  color: var(--c-ink);
+  background: var(--c-surface-3);
+}
+.heat__rowbtn[aria-pressed='true'] {
+  color: var(--c-accent);
+  background: var(--c-accent-soft);
+  font-weight: 600;
+}
+.heat__cell {
+  padding: 0;
+}
+.heat__cellbtn {
+  display: block;
+  width: 100%;
+  min-width: 58px;
+  padding: 5px 6px;
+  border-radius: var(--r-xs);
+  font-size: var(--fs-micro);
+  text-align: right;
+  transition: outline-color var(--t-fast) var(--ease);
+  outline: 1px solid transparent;
+}
+.heat__cellbtn:hover {
+  outline-color: var(--c-ink);
+}
+.heat__total {
+  font-size: var(--fs-micro);
+  color: var(--c-muted);
+  text-align: right;
+  padding-left: var(--sp-2);
+  white-space: nowrap;
+}
+.heat__row--sel .heat__rowbtn {
+  color: var(--c-accent);
+  font-weight: 600;
+}
+
+/* ------------------------------------------------------- chart chrome */
+
+/*
+ * Chart furniture is deliberately faint. Gridlines are a hairline in the
+ * lightest neutral, axis labels sit at the smallest size in the muted tone,
+ * and no chart draws a border of its own — the card already provides one.
+ * Anything that is not data should be almost invisible until looked for.
+ */
+.chart-wrap svg {
+  overflow: visible;
+}
+
+/* ------------------------------------------------------------- sankey */
+
+.sankey__link {
+  fill: none;
+  transition: opacity var(--t-fast) var(--ease);
+  cursor: pointer;
+}
+
+.sankey__label {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 450;
+  fill: var(--c-ink-2);
+  pointer-events: none;
+}
+.sankey__label--sel {
+  font-weight: 700;
+  fill: var(--c-ink);
+}
+
+/* Two-line map legend: the fill ramp and the bubble status read as separate
+   encodings, because they are. */
+.map__legend {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 5px 9px;
+}
+.map__legend-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+}
+.map__legend-key {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-faint);
+  min-width: 46px;
+}
+.map__ramp {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.map__ramp-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.map__ramp-chip {
+  width: 16px;
+  height: 9px;
+  border-radius: 2px;
+  border: 1px solid var(--c-rule);
+}
+.map__ramp-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  color: var(--c-muted);
+}
+
+.threshold__note {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-micro);
+  color: var(--c-faint);
+  line-height: 1.5;
+}
+
+/* Reference annotations sit below the data in the visual hierarchy. */
+.chart-ref-label--quiet {
+  fill: var(--c-faint);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: none;
+  font-size: 10px;
+}
+
+/*
+ * The map clips to its own frame. Other charts opt into `overflow: visible` so
+ * axis labels can sit in the margin, but a pannable map must never paint
+ * outside the card it lives in.
+ *
+ * The selector matches `.chart-wrap svg` on specificity and then adds a class,
+ * so it wins outright rather than depending on source order.
+ */
+.chart-wrap svg.map__svg {
+  overflow: hidden;
+}
+
+/* When the view is already at rest the reset control reads as a spent state
+   rather than an action with no effect. */
+.map__controls .btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}

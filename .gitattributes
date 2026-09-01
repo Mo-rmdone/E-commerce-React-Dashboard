@@ -1,0 +1,14 @@
+# Normalise line endings in the repo; check out native on each platform.
+* text=auto eol=lf
+
+# Binary — never touch these.
+*.xlsx binary
+*.png binary
+*.jpg binary
+*.woff2 binary
+
+# Generated build inputs: committed so the app builds from a clone, but
+# collapsed in diffs and excluded from language stats.
+public/data/dataset.json linguist-generated=true -diff
+public/countries-110m.json linguist-generated=true -diff
+package-lock.json linguist-generated=true -diff

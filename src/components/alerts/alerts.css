@@ -1,0 +1,197 @@
+.alerts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  flex: 1;
+  min-height: 0;
+}
+
+.alerts__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 2px;
+}
+
+.alerts__none {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: var(--sp-4);
+  font-size: var(--fs-sm);
+  color: var(--c-pos);
+  background: var(--c-pos-soft);
+  border-radius: var(--r-sm);
+}
+
+.alert {
+  padding: var(--sp-3);
+  border: 1px solid var(--c-rule-soft);
+  border-left: 2px solid var(--c-neutral);
+  border-radius: var(--r-sm);
+  background: var(--c-surface-2);
+}
+.alert--critical { border-left-color: var(--c-neg); }
+.alert--warning  { border-left-color: var(--c-warn); }
+.alert--opportunity { border-left-color: var(--c-accent); }
+.alert--positive { border-left-color: var(--c-pos); }
+
+.alert__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.alert--critical .alert__head { color: var(--c-neg); }
+.alert--warning .alert__head { color: var(--c-warn); }
+.alert--opportunity .alert__head { color: var(--c-accent); }
+.alert--positive .alert__head { color: var(--c-pos); }
+
+.alert__sev {
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.alert__title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-ink);
+  letter-spacing: var(--ls-tight);
+  flex: 1 1 100%;
+  margin-top: 1px;
+}
+
+.alert__metric {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: var(--sp-2);
+}
+.alert__value {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  color: var(--c-ink);
+}
+.alert__unit {
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+}
+
+.alert__detail {
+  margin-top: 5px;
+  font-size: var(--fs-xs);
+  line-height: 1.55;
+  color: var(--c-ink-2);
+}
+
+.alert__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: var(--sp-2);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-accent);
+  padding: 2px 4px;
+  margin-left: -4px;
+  border-radius: var(--r-xs);
+}
+.alert__action:hover {
+  background: var(--c-accent-soft);
+}
+
+/* -------------------------------------------------------------- health */
+
+.health {
+  display: flex;
+  gap: var(--sp-4);
+  padding: var(--sp-3);
+  border: 1px solid var(--c-rule-soft);
+  border-radius: var(--r-sm);
+  background: var(--c-surface);
+  flex: none;
+}
+
+.health__dial {
+  position: relative;
+  flex: none;
+  width: 76px;
+  height: 76px;
+}
+.health__score {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 1px;
+  padding-top: 27px;
+}
+.health__score .num {
+  font-size: 21px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.health__max {
+  font-size: var(--fs-micro);
+  color: var(--c-faint);
+}
+
+.health__text {
+  flex: 1;
+  min-width: 0;
+}
+.health__word {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: var(--ls-tight);
+  margin-top: 1px;
+}
+.health__word--pos { color: var(--c-pos); }
+.health__word--warn { color: var(--c-warn); }
+.health__word--neg { color: var(--c-neg); }
+
+.health__parts {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: var(--sp-2);
+}
+.health__parts li {
+  display: grid;
+  grid-template-columns: 68px 1fr 38px;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.health__part-label {
+  font-size: var(--fs-micro);
+  color: var(--c-muted);
+}
+.health__part-track {
+  height: 4px;
+  border-radius: var(--r-pill);
+  background: var(--c-track);
+  overflow: hidden;
+}
+.health__part-fill {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-pill);
+  transition: width var(--t-slow) var(--ease);
+}
+.health__part-val {
+  font-size: var(--fs-micro);
+  color: var(--c-ink-2);
+  text-align: right;
+}
+.health__note {
+  margin-top: 6px;
+  font-size: var(--fs-micro);
+  color: var(--c-faint);
+}

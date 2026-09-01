@@ -1,0 +1,440 @@
+.shell {
+  display: grid;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  height: 100%;
+  overflow: hidden;
+}
+.shell--collapsed {
+  grid-template-columns: var(--rail-w-collapsed) minmax(0, 1fr);
+}
+
+.shell__main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.shell__canvas {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
+}
+
+/* -------------------------------------------------------------- rail */
+
+/*
+ * White, quiet, and clearly separated from the analytical surface by a single
+ * hairline. The rail is a place to move from, not something to look at, so it
+ * carries no fills, no shadows and no colour except on the active item.
+ */
+.rail {
+  display: flex;
+  flex-direction: column;
+  background: var(--c-surface);
+  border-right: 1px solid var(--c-rule);
+  padding: var(--sp-6) var(--sp-4) var(--sp-5);
+  gap: var(--sp-7);
+  overflow: hidden;
+}
+
+.rail__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-2);
+  min-height: 36px;
+}
+.rail__mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: var(--r-sm);
+  background: var(--c-accent);
+  color: var(--c-on-accent);
+}
+.rail__wordmark {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.rail__name {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  line-height: 1.15;
+}
+.rail__sub {
+  font-size: var(--fs-micro);
+  color: var(--c-muted);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.rail__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.rail__grouplabel {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-faint);
+  padding: 0 var(--sp-3);
+}
+
+.rail__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* Comfortable target height, rounded, and a tinted fill when active —
+   never a heavy block or a coloured edge marker. */
+.rail__link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: 9px var(--sp-3);
+  border-radius: var(--r-sm);
+  color: var(--c-ink-2);
+  font-size: var(--fs-md);
+  font-weight: 450;
+  transition:
+    color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+.rail__link:hover {
+  color: var(--c-ink);
+  background: var(--c-surface-3);
+}
+.rail__link--active {
+  color: var(--c-accent);
+  font-weight: 600;
+  background: var(--c-accent-soft);
+}
+.rail__text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rail__badge {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--c-muted);
+  background: var(--c-surface-3);
+  border-radius: var(--r-pill);
+  padding: 1px 7px;
+}
+.rail__link--active .rail__badge,
+.rail__link:hover .rail__badge {
+  background: var(--c-surface);
+}
+
+.rail__foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rail__util {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: 8px var(--sp-3);
+  border-radius: var(--r-sm);
+  color: var(--c-muted);
+  font-size: var(--fs-sm);
+  transition:
+    color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+.rail__util:hover {
+  color: var(--c-ink);
+  background: var(--c-surface-3);
+}
+
+.rail__meta {
+  margin-top: var(--sp-4);
+  padding: var(--sp-3) var(--sp-3) 0;
+  border-top: 1px solid var(--c-rule-soft);
+  font-size: var(--fs-micro);
+  line-height: 1.7;
+  color: var(--c-faint);
+}
+
+.shell--collapsed .rail {
+  padding-left: var(--sp-2);
+  padding-right: var(--sp-2);
+  align-items: center;
+}
+.shell--collapsed .rail__link,
+.shell--collapsed .rail__util {
+  justify-content: center;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.shell--collapsed .rail__badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  margin: 0;
+}
+
+/* ------------------------------------------------------------ topbar */
+
+/*
+ * The page's identity, given room and outranking every control on the screen.
+ * Utilities live in the rail rather than here, so nothing competes with the
+ * title.
+ */
+.topbar {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-5);
+  flex-wrap: wrap;
+  padding: var(--sp-7) var(--pad-page-x) var(--sp-5);
+  flex: none;
+}
+
+.topbar__text {
+  min-width: 0;
+  flex: 1 1 420px;
+}
+
+.topbar__eyebrow {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-accent);
+}
+
+.topbar__title {
+  font-size: var(--fs-display);
+  font-weight: 600;
+  letter-spacing: -0.024em;
+  line-height: 1.2;
+  color: var(--c-ink);
+  margin-top: 5px;
+  text-wrap: balance;
+}
+
+.topbar__q {
+  font-size: var(--fs-sm);
+  color: var(--c-muted);
+  margin-top: 6px;
+  max-width: 78ch;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------ drawer */
+
+.drawer__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgba(16, 19, 25, 0.32);
+  backdrop-filter: blur(2px);
+}
+
+.drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 71;
+  width: min(500px, 94vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--c-surface);
+  border-left: 1px solid var(--c-rule);
+  box-shadow: var(--sh-3);
+}
+
+.drawer__head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-5) var(--sp-6);
+  border-bottom: 1px solid var(--c-rule-soft);
+  flex: none;
+}
+.drawer__head .btn {
+  margin-left: auto;
+}
+.drawer__title {
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: var(--ls-tight);
+  line-height: 1.25;
+  margin-top: 4px;
+  text-wrap: balance;
+}
+
+.drawer__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--sp-5) var(--sp-6) var(--sp-9);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-7);
+}
+
+/* ------------------------------------------------------------- notes */
+
+.notes__source {
+  display: flex;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
+  background: var(--c-surface-2);
+  border: 1px solid var(--c-rule-soft);
+  border-radius: var(--r-sm);
+  color: var(--c-muted);
+}
+.notes__file {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--c-ink-2);
+  overflow-wrap: anywhere;
+}
+.notes__meta {
+  font-size: var(--fs-micro);
+  color: var(--c-muted);
+  margin-top: 4px;
+  line-height: 1.6;
+}
+
+.notes__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.notes__h {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--fs-lg);
+  font-weight: 600;
+  letter-spacing: var(--ls-tight);
+}
+.notes__lede {
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  line-height: 1.55;
+}
+.notes__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-top: var(--sp-2);
+}
+
+.note {
+  padding: var(--sp-4);
+  border: 1px solid var(--c-rule-soft);
+  border-radius: var(--r-sm);
+  background: var(--c-surface-2);
+}
+.note__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+.note__id {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  color: var(--c-accent);
+}
+.note__label {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-ink);
+}
+.note__rows {
+  margin-left: auto;
+  font-size: var(--fs-micro);
+  color: var(--c-muted);
+  white-space: nowrap;
+}
+.note__detail {
+  margin-top: 5px;
+  font-size: var(--fs-xs);
+  line-height: 1.6;
+  color: var(--c-ink-2);
+}
+
+.notes__dict {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--c-rule-soft);
+  border: 1px solid var(--c-rule-soft);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+}
+.notes__dict-row {
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  gap: var(--sp-3);
+  padding: 7px var(--sp-3);
+  background: var(--c-surface);
+  font-size: var(--fs-xs);
+}
+.notes__dict-row dt {
+  font-weight: 600;
+  color: var(--c-ink-2);
+}
+.notes__dict-row dd {
+  color: var(--c-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* -------------------------------------------------------- responsive */
+
+@media (max-width: 1180px) {
+  .shell {
+    grid-template-columns: var(--rail-w-collapsed) minmax(0, 1fr);
+  }
+  .rail__wordmark,
+  .rail__text,
+  .rail__meta,
+  .rail__grouplabel {
+    display: none;
+  }
+  .rail {
+    align-items: center;
+    padding-left: var(--sp-2);
+    padding-right: var(--sp-2);
+  }
+  .rail__link,
+  .rail__util {
+    justify-content: center;
+  }
+  .rail__badge {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    margin: 0;
+  }
+  .topbar {
+    padding-left: var(--sp-5);
+    padding-right: var(--sp-5);
+    padding-top: var(--sp-6);
+  }
+}

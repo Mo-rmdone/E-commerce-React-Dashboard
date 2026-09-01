@@ -1,0 +1,274 @@
+/*
+ * The control strip.
+ *
+ * Filters are application furniture, not analysis, so this band stays quiet:
+ * no fill of its own, one hairline beneath it, small rounded controls, and a
+ * type size below the card titles it sits above. Everything here is
+ * deliberately lighter in weight than the content it filters.
+ */
+.fbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--c-ground) 88%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--c-rule);
+  flex: none;
+}
+
+.fbar__row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--pad-page-x);
+  flex-wrap: wrap;
+}
+
+.fbar__icon {
+  color: var(--c-faint);
+  display: grid;
+  place-items: center;
+  flex: none;
+  margin-right: 2px;
+}
+
+.fbar__spacer {
+  flex: 1;
+  min-width: var(--sp-2);
+}
+
+.fbar__count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  white-space: nowrap;
+}
+.fbar__count-sep,
+.fbar__count-total {
+  color: var(--c-faint);
+}
+.fbar__count-label {
+  color: var(--c-faint);
+  margin-left: 2px;
+}
+
+/* ------------------------------------------------------------- chips row */
+
+.fbar__chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 0 var(--pad-page-x) var(--sp-3);
+  overflow: hidden;
+}
+.fbar__chips-label {
+  flex: none;
+  color: var(--c-faint);
+}
+.fbar__clearall {
+  font-size: var(--fs-xs);
+  color: var(--c-accent);
+  padding: 3px 6px;
+  border-radius: var(--r-xs);
+  font-weight: 500;
+}
+.fbar__clearall:hover {
+  background: var(--c-accent-soft);
+}
+
+.achip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 4px 3px 10px;
+  border-radius: var(--r-pill);
+  background: var(--c-accent-soft);
+  font-size: var(--fs-xs);
+  max-width: 260px;
+}
+.achip__dim {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--c-accent);
+  flex: none;
+}
+.achip__val {
+  color: var(--c-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.achip__x {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: var(--r-pill);
+  color: var(--c-accent);
+  flex: none;
+}
+.achip__x:hover {
+  background: color-mix(in srgb, var(--c-accent) 14%, transparent);
+}
+
+/* ------------------------------------------------------------ multiselect */
+
+.ms {
+  position: relative;
+  flex: none;
+}
+
+.ms__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px 6px 11px;
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-pill);
+  background: var(--c-surface);
+  font-size: var(--fs-sm);
+  max-width: 200px;
+  transition:
+    border-color var(--t-fast) var(--ease),
+    background var(--t-fast) var(--ease);
+}
+.ms__btn:hover {
+  border-color: var(--c-rule-strong);
+}
+.ms__btn--active {
+  border-color: var(--c-accent-line);
+  background: var(--c-accent-soft);
+}
+
+.ms__label {
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  flex: none;
+}
+.ms__btn--active .ms__label {
+  color: var(--c-accent);
+}
+.ms__value {
+  color: var(--c-ink);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ms__caret {
+  color: var(--c-faint);
+  flex: none;
+  transition: transform var(--t-fast) var(--ease);
+}
+.ms__caret--open {
+  transform: rotate(180deg);
+}
+
+.ms__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.ms__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 51;
+  width: 252px;
+  background: var(--c-overlay);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-pop);
+  overflow: hidden;
+}
+
+.ms__search {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: var(--sp-3);
+  border-bottom: 1px solid var(--c-rule-soft);
+  color: var(--c-faint);
+}
+.ms__search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: var(--fs-sm);
+}
+
+.ms__list {
+  max-height: 280px;
+  overflow-y: auto;
+  padding: var(--sp-2);
+}
+
+.ms__opt {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: 7px 9px;
+  border-radius: var(--r-xs);
+  font-size: var(--fs-sm);
+  text-align: left;
+}
+.ms__opt:hover {
+  background: var(--c-surface-3);
+}
+.ms__opt-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ms__box {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border: 1px solid var(--c-rule-strong);
+  border-radius: 4px;
+  color: var(--c-on-accent);
+}
+.ms__box--on {
+  background: var(--c-accent);
+  border-color: var(--c-accent);
+}
+
+.ms__empty {
+  padding: var(--sp-4);
+  font-size: var(--fs-sm);
+  color: var(--c-muted);
+  text-align: center;
+}
+
+.ms__clear {
+  display: block;
+  width: 100%;
+  padding: var(--sp-3);
+  border-top: 1px solid var(--c-rule-soft);
+  font-size: var(--fs-xs);
+  color: var(--c-accent);
+  font-weight: 500;
+}
+.ms__clear:hover {
+  background: var(--c-accent-soft);
+}
+
+@media (max-width: 1180px) {
+  .fbar__row,
+  .fbar__chips {
+    padding-left: var(--sp-5);
+    padding-right: var(--sp-5);
+  }
+}
