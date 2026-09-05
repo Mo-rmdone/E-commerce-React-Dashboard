@@ -7,10 +7,20 @@
  * round-trip and nothing leaves the browser.
  */
 
-/** RFC-4180 escaping: wrap in quotes if the value contains a comma, quote or newline. */
+/**
+ * RFC-4180 escaping: wrap in quotes if the value contains a comma, quote or
+ * newline. Text cells are also guarded against CSV formula injection — a value
+ * beginning with `=`, `+`, `-`, `@` or a control char is prefixed with an
+ * apostrophe so a spreadsheet (Excel, LibreOffice, Google Sheets) treats it as
+ * text rather than executing it. Numbers passed as `number` are left untouched,
+ * so numeric columns stay usable.
+ */
 function escapeField(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return '';
-  const s = String(value);
+  let s = String(value);
+  if (typeof value === 'string' && /^[=+\-@\t\r]/.test(s)) {
+    s = `'${s}`;
+  }
   return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
