@@ -1,10 +1,11 @@
-import { useCallback, useMemo, useState } from 'react';
-import { ChevronLeft, SlidersHorizontal, TriangleAlert } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { SlidersHorizontal, TriangleAlert } from 'lucide-react';
 import type { Breakdown, Dataset } from '@/types';
 import { BUSINESS_TARGETS } from '@/config/targets';
 import { useDashboardData, useBreakdown } from '@/hooks/useDashboardData';
+import { filterRows } from '@/data/transformations/filterRows';
 import { useFilters } from '@/hooks/useFilters';
-import { useDrilldown, type DrillthroughEntity } from '@/hooks/useDrilldown';
+import type { DrillthroughEntity } from '@/hooks/useDrilldown';
 import { dimensionAccess, margin, revenue } from '@/data/metrics/breakdowns';
 import {
   buildDiscountImpact,
@@ -13,13 +14,13 @@ import {
 } from '@/data/metrics/discount';
 import { Card, EmptyState, Segmented } from '@/components/primitives';
 import { InfoDot } from '@/components/tooltips/Tooltip';
-import { SankeyFlow } from '@/components/charts/SankeyFlow';
-import { buildFlowGraph, type FlowNode } from '@/data/metrics/flows';
+import type { TreeMetric } from '@/components/charts/DecompositionTree';
+import { CategoryBars } from '@/components/charts/CategoryBars';
 import { DiscountScatter } from '@/components/charts/DiscountScatter';
-import { RankedBars, type RankedDatum } from '@/components/charts/RankedBars';
+import { LeaderboardTable, type LeaderRow } from '@/components/tables/LeaderboardTable';
 import { Heatmap, type HeatmapAxis, type HeatmapCell } from '@/components/charts/Heatmap';
 import { categorical } from '@/config/theme';
-import { int, pct, usd, usdShort } from '@/utils/format';
+import { int, pct, pctSigned, usd, usdShort } from '@/utils/format';
 import '../pages.css';
 
 type RankMode = 'top' | 'under';
@@ -47,68 +48,22 @@ export function ProductIntelligence({
   const data = useDashboardData(ds);
   const { filters, toggle, basis } = useFilters();
 
+  const [treeMetric, setTreeMetric] = useState<TreeMetric>('sales');
   const [rankMode, setRankMode] = useState<RankMode>('top');
   const [scatterUnit, setScatterUnit] = useState<ScatterUnit>('subcategory');
-
-  // The flow shows two tiers at once, so two views cover all three levels:
-  // Category -> Subcategory at the root, and Subcategory -> Product once a
-  // category is chosen. There is no SKU tier in the workbook.
-  const drill = useDrilldown(['category', 'subcategory'] as const);
-
-  const scoped = useMemo(
-    () => scopeToDrill(ds, data.rows, drill.path),
-    [ds, data.rows, drill.path],
-  );
-
+  const [countryMode, setCountryMode] = useState<'top' | 'bottom'>('top');
+  const [countryPage, setCountryPage] = useState(0);
 
   const palette = categorical();
   const categories = useBreakdown(ds, data, 'category');
   const countries = useBreakdown(ds, data, 'country');
 
-  // Root: revenue flowing from each Category into its Subcategories.
-  // Drilled: from each Subcategory of the chosen category into Products.
-  const flowDims = drill.depth === 0
-    ? ({ source: 'category', target: 'subcategory' } as const)
-    : ({ source: 'subcategory', target: 'product' } as const);
-
-  const flow = useMemo(
-    () =>
-      buildFlowGraph(ds, scoped, flowDims.source, flowDims.target, {
-        basis,
-        maxTargets: drill.depth === 0 ? 17 : 12,
-      }),
-    [ds, scoped, flowDims.source, flowDims.target, basis, drill.depth],
-  );
-
-  const flowNodeTooltip = useCallback(
-    (n: FlowNode) => ({
-      title: n.label,
-      subtitle: n.aggregate
-        ? 'Every remaining target, combined'
-        : `${pct(n.value / (flow.total || 1), 1)} of revenue in view`,
-      rows: [
-        { label: 'Revenue', value: usd(n.value), strong: true },
-        { label: 'Share', value: pct(n.value / (flow.total || 1), 1) },
-      ],
-      hint: n.aggregate
-        ? 'Combined bucket — not selectable'
-        : n.side === 'source' && drill.depth === 0
-          ? 'Click to filter · double-click to open its subcategories'
-          : 'Click to filter',
-    }),
-    [flow.total, drill.depth],
-  );
-
-  const flowLinkTooltip = useCallback(
-    (source: FlowNode, target: FlowNode, value: number, shareOfSource: number) => ({
-      title: `${source.label} → ${target.label}`,
-      subtitle: `${pct(shareOfSource, 1)} of ${source.label}`,
-      rows: [
-        { label: 'Revenue', value: usd(value), strong: true },
-        { label: 'Share of total', value: pct(value / (flow.total || 1), 1) },
-      ],
-    }),
-    [flow.total],
+  // The tree reads rows filtered by every dimension EXCEPT its own three, so a
+  // click that filters the page to one category still leaves the other
+  // categories standing in the tree rather than collapsing it to a single row.
+  const treeRows = useMemo(
+    () => filterRows(ds, { ...filters, category: [], subcategory: [], product: [] }),
+    [ds, filters],
   );
 
   const scatter = useMemo(() => {
@@ -126,52 +81,76 @@ export function ProductIntelligence({
 
   const products = useBreakdown(ds, data, 'product');
 
-  const ranked = useMemo<RankedDatum[]>(() => {
+  const leaders = useMemo<LeaderRow[]>(() => {
     const pool = products.filter((p) => p.current.lines >= 3);
     const sorted =
       rankMode === 'top'
         ? [...pool].sort((a, b) => revenue(b.current, basis) - revenue(a.current, basis))
         : [...pool].sort((a, b) => a.current.profit - b.current.profit);
 
-    return sorted.slice(0, 8).map((p) => {
+    // Top mode ranks and sizes on revenue; underperformers on the size of the
+    // loss, so the worst offender leads and the bar reads as "how bad". The
+    // whole ranked pool is returned so the card's search can reach any product;
+    // the table caps the view at the top eight of whatever the search leaves.
+    const magnitude = (p: (typeof sorted)[number]) =>
+      rankMode === 'top' ? revenue(p.current, basis) : Math.abs(Math.min(0, p.current.profit));
+    const maxMag = Math.max(1, ...sorted.map(magnitude));
+
+    return sorted.map((p) => {
       const m = margin(p.current, basis);
+      const marginTxt =
+        m === null
+          ? '—'
+          : `${pct(m)} margin${m < BUSINESS_TARGETS.profitMargin ? ' · below target' : ''}`;
       return {
         key: p.key,
-        label: p.label,
-        value: rankMode === 'top' ? revenue(p.current, basis) : p.current.profit,
-        secondary: `${pct(m)} margin · ${int(p.current.lines)} lines`,
-        tone:
-          rankMode === 'under'
-            ? 'neg'
-            : m !== null && m >= BUSINESS_TARGETS.profitMargin
-              ? 'accent'
-              : 'neutral',
-        tooltip: {
-          title: p.label,
-          subtitle: `Unit price ${usd(ds.dims.products[p.key].unitPrice)} · ${int(
-            p.current.quantity,
-          )} units sold`,
-          rows: [
-            { label: 'Revenue', value: usd(revenue(p.current, basis)), strong: true },
-            {
-              label: 'Profit',
-              value: usd(p.current.profit),
-              tone: p.current.profit < 0 ? ('neg' as const) : ('pos' as const),
-            },
-            { label: 'Margin', value: pct(m) },
-            { label: 'Avg discount', value: pct(p.current.avgDiscount) },
-            { label: 'Lines at a loss', value: pct(p.current.lossShare, 0) },
-          ],
-          hint: 'Click to filter · double-click for product detail',
-        },
+        name: p.label,
+        initials: initialsOf(p.label),
+        subtitle: `${marginTxt} · ${int(p.current.lines)} lines`,
+        valueLabel: rankMode === 'top' ? usdShort(revenue(p.current, basis)) : usdShort(p.current.profit),
+        valueNegative: rankMode === 'under' && p.current.profit < 0,
+        barPct: magnitude(p) / maxMag,
+        delta: p.growth,
+        deltaLabel: p.growth === null ? '' : pctSigned(p.growth, 1),
       };
     });
-  }, [products, rankMode, basis, ds]);
+  }, [products, rankMode, basis]);
 
-  const { rows: heatRows, cols: heatCols, cells: heatCells } = useMemo(
+  const matrix = useMemo(
     () => buildProfitMatrix(ds, data.rows, countries, categories),
     [ds, data.rows, countries, categories],
   );
+
+  // Ten countries a page. "Top" reads the profit ranking as built (descending);
+  // "bottom" reverses it so the biggest losses lead. The colour scale stays
+  // fixed across pages because every cell is handed to the heatmap — only the
+  // visible rows change.
+  const COUNTRIES_PER_PAGE = 10;
+  const sortedHeatRows = useMemo(
+    () => (countryMode === 'top' ? matrix.rows : [...matrix.rows].reverse()),
+    [matrix.rows, countryMode],
+  );
+  const heatPageCount = Math.max(1, Math.ceil(sortedHeatRows.length / COUNTRIES_PER_PAGE));
+
+  // Reset to the first page whenever the ranking or the filtered data changes.
+  useEffect(() => {
+    setCountryPage(0);
+  }, [countryMode, matrix.rows]);
+  const heatPage = Math.min(countryPage, heatPageCount - 1);
+
+  const heatRows = sortedHeatRows.slice(
+    heatPage * COUNTRIES_PER_PAGE,
+    heatPage * COUNTRIES_PER_PAGE + COUNTRIES_PER_PAGE,
+  );
+  const heatCols = matrix.cols;
+  const heatCells = matrix.cells;
+  const heatRangeLabel =
+    sortedHeatRows.length === 0
+      ? ''
+      : `${heatPage * COUNTRIES_PER_PAGE + 1}–${Math.min(
+          sortedHeatRows.length,
+          (heatPage + 1) * COUNTRIES_PER_PAGE,
+        )} of ${sortedHeatRows.length}`;
 
   const tiers = useMemo(() => buildMarginTiers(ds, data.rows), [ds, data.rows]);
   const impact = useMemo(() => buildDiscountImpact(ds, data.rows), [ds, data.rows]);
@@ -195,57 +174,40 @@ export function ProductIntelligence({
 
       <div className="grid grid--prod">
         <Card
-          title={drill.depth === 0 ? 'Revenue flow: category to subcategory' : 'Revenue flow: subcategory to product'}
+          title="Category ranking"
           span="tree"
-          subtitle={
-            flow.foldedTargets > 0
-              ? `top ${drill.depth === 0 ? 17 : 12}, rest combined`
-              : `${flow.nodes.filter((n) => n.side === 'target').length} on the right`
-          }
+          subtitle="All subcategories, ranked within each category"
           info={
-            <InfoDot label="About this flow">
-              Band thickness is revenue. A flow, not a tree, because that is what the workbook
-              supports: Category and Subcategory are attributes of the order line, and 3,576
-              products appear under more than one subcategory — so a product does not belong to a
-              category. Reading it as flow states only what is true. Click a node to filter;
-              double-click a category to open its subcategories.
+            <InfoDot label="About this chart">
+              Every subcategory at once, banded by category and ranked within, on one shared axis
+              so a bar in one category compares directly to another. The value past each bar is
+              its share of the total, so you read the ranking and the part-to-whole together. On
+              Sales bars run from zero, coloured by category; on Profit they diverge from a zero
+              line — green right for a gain, red left for a loss. Click a category or subcategory
+              to filter the page.
             </InfoDot>
           }
           tools={
-            drill.canDrillUp ? (
-              <button type="button" className="btn" onClick={drill.drillUp}>
-                <ChevronLeft size={13} />
-                Back
-              </button>
-            ) : null
+            <Segmented
+              label="Metric"
+              value={treeMetric}
+              onChange={setTreeMetric}
+              options={[
+                { value: 'sales', label: 'Sales' },
+                { value: 'profit', label: 'Profit' },
+              ]}
+            />
           }
         >
-          <Breadcrumb
-            path={drill.path.map((p) => p.label)}
-            onJump={drill.jumpTo}
-            onReset={drill.reset}
-            rootLabel="All categories"
-          />
-          <SankeyFlow
-            graph={flow}
-            height={drill.depth === 0 ? 320 : 300}
-            colorOf={(_, i) => palette[i % palette.length]}
-            nodeTooltip={flowNodeTooltip}
-            linkTooltip={flowLinkTooltip}
-            selectedSources={drill.depth === 0 ? filters.category : filters.subcategory}
-            selectedTargets={drill.depth === 0 ? filters.subcategory : filters.product}
-            onSelectSource={(k) =>
-              toggle(drill.depth === 0 ? 'category' : 'subcategory', k, 'Revenue flow')
-            }
-            onSelectTarget={(k) => {
-              if (k < 0) return; // the combined "Other" bucket is not a real member
-              toggle(drill.depth === 0 ? 'subcategory' : 'product', k, 'Revenue flow');
-            }}
-            onDrillSource={
-              drill.depth === 0
-                ? (n) => drill.drillTo({ level: 'category', key: n.key, label: n.label })
-                : undefined
-            }
+          <CategoryBars
+            ds={ds}
+            rows={treeRows}
+            metric={treeMetric}
+            palette={palette}
+            selectedCategories={filters.category}
+            selectedSubcategories={filters.subcategory}
+            onToggleCategory={(k) => toggle('category', k, 'Category bars')}
+            onToggleSubcategory={(k) => toggle('subcategory', k, 'Category bars')}
           />
         </Card>
 
@@ -312,32 +274,52 @@ export function ProductIntelligence({
             />
           }
         >
-          <RankedBars
-            data={ranked}
-            formatValue={usdShort}
+          <LeaderboardTable
+            rows={leaders}
+            headerRight="vs prior year"
             selected={filters.product}
-            onSelect={(k) => toggle('product', k, 'Product ranking')}
-            onOpenDetail={(k) => onOpenDetail({ kind: 'product', key: k })}
+            onSelect={(k) => toggle('product', k, 'Product leaderboard')}
+            onOpen={(k) => onOpenDetail({ kind: 'product', key: k })}
             emptyMessage="No product in this filter has enough order lines to rank."
+            search={(r) => r.name}
+            searchPlaceholder="Search products…"
+            maxRows={8}
           />
         </Card>
 
         <Card
           title="Profit by country and category"
           span="heat"
-          subtitle={`Top ${heatRows.length} countries`}
+          subtitle="Profit contribution · 10 per page"
           info={
             <InfoDot label="About this matrix">
               Profit contribution, coloured on a diverging scale anchored at zero so losses read
-              as losses rather than as weaker gains. Click a country or category to filter; use
-              the sort control in a column header to rank countries by that category.
+              as losses rather than as weaker gains. Countries are ranked by total profit, ten to
+              a page; switch to Bottom 10 to lead with the biggest losses. Click a country or
+              category to filter; use the sort control in a column header to rank the visible page
+              by that category.
             </InfoDot>
+          }
+          tools={
+            <Segmented
+              label="Country ranking"
+              value={countryMode}
+              onChange={(m) => setCountryMode(m)}
+              options={[
+                { value: 'top', label: 'Top 10' },
+                { value: 'bottom', label: 'Bottom 10' },
+              ]}
+            />
           }
         >
           <Heatmap
             rows={heatRows}
             cols={heatCols}
             cells={heatCells}
+            page={heatPage}
+            pageCount={heatPageCount}
+            rangeLabel={heatRangeLabel}
+            onPage={setCountryPage}
             formatValue={usdShort}
             selectedRows={filters.country}
             selectedCols={filters.category}
@@ -353,28 +335,15 @@ export function ProductIntelligence({
 
 /* --------------------------------------------------------------- helpers */
 
-function scopeToDrill(
-  ds: Dataset,
-  rows: Int32Array,
-  path: { level: string; key: number }[],
-): Int32Array {
-  if (path.length === 0) return rows;
-  const f = ds.facts;
-  const out = new Int32Array(rows.length);
-  let k = 0;
-  outer: for (let j = 0; j < rows.length; j++) {
-    const i = rows[j];
-    for (const step of path) {
-      if (step.level === 'category') {
-        if (ds.dims.subToCategory[f.subcategory[i]] !== step.key) continue outer;
-      } else if (step.level === 'subcategory') {
-        if (f.subcategory[i] !== step.key) continue outer;
-      } else if (f.product[i] !== step.key) continue outer;
-    }
-    out[k++] = i;
-  }
-  return out.subarray(0, k);
+
+/** Two-letter monogram from a product name for the leaderboard chip. */
+function initialsOf(name: string): string {
+  const words = name.split(/[\s-]+/).filter(Boolean);
+  const a = words[0]?.[0] ?? '?';
+  const b = words[1]?.[0] ?? words[0]?.[1] ?? '';
+  return (a + b).toUpperCase();
 }
+
 
 /**
  * Top countries by absolute profit contribution against every category.
@@ -386,21 +355,18 @@ function buildProfitMatrix(
   countries: Breakdown[],
   categories: Breakdown[],
 ): { rows: HeatmapAxis[]; cols: HeatmapAxis[]; cells: HeatmapCell[] } {
-  const top = [...countries]
-    .sort((a, b) => Math.abs(b.current.profit) - Math.abs(a.current.profit))
-    .slice(0, 12);
-  const topKeys = new Set(top.map((c) => c.key));
-
+  // Every trading country, ranked by total profit. Paging happens in the page;
+  // the whole matrix is built once so the colour scale is stable across pages.
+  const ranked = [...countries].sort((a, b) => b.current.profit - a.current.profit);
   const nCat = ds.dims.categories.length;
-  const idx = new Map(top.map((c, i) => [c.key, i]));
-  const grid = new Float64Array(top.length * nCat);
-  const salesGrid = new Float64Array(top.length * nCat);
-  const lineGrid = new Float64Array(top.length * nCat);
+  const idx = new Map(ranked.map((c, i) => [c.key, i]));
+  const grid = new Float64Array(ranked.length * nCat);
+  const salesGrid = new Float64Array(ranked.length * nCat);
+  const lineGrid = new Float64Array(ranked.length * nCat);
 
   const f = ds.facts;
   for (let j = 0; j < rows.length; j++) {
     const i = rows[j];
-    if (!topKeys.has(f.country[i])) continue;
     const r = idx.get(f.country[i]);
     if (r === undefined) continue;
     const c = ds.dims.subToCategory[f.subcategory[i]];
@@ -450,7 +416,7 @@ function buildProfitMatrix(
   }
 
   return {
-    rows: top.map((c) => ({ key: c.key, label: c.label, total: c.current.profit })),
+    rows: ranked.map((c) => ({ key: c.key, label: c.label, total: c.current.profit })),
     cols: categories.map((c) => ({ key: c.key, label: c.label, total: c.current.profit })),
     cells,
   };
@@ -501,38 +467,4 @@ function DiscountImpactStrip({
   );
 }
 
-function Breadcrumb({
-  path,
-  onJump,
-  onReset,
-  rootLabel,
-}: {
-  path: string[];
-  onJump: (i: number) => void;
-  onReset: () => void;
-  rootLabel: string;
-}) {
-  return (
-    <nav className="crumbs" aria-label="Drill path">
-      <button type="button" className="crumbs__item" onClick={onReset}>
-        {rootLabel}
-      </button>
-      {path.map((label, i) => (
-        <span key={`${label}-${i}`} className="crumbs__seg">
-          <span className="crumbs__sep" aria-hidden>
-            ›
-          </span>
-          <button
-            type="button"
-            className="crumbs__item"
-            onClick={() => onJump(i)}
-            aria-current={i === path.length - 1 ? 'true' : undefined}
-          >
-            {label}
-          </button>
-        </span>
-      ))}
-    </nav>
-  );
-}
 

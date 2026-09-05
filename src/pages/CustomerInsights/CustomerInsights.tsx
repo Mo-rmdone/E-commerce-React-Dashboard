@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { SlidersHorizontal, Users } from 'lucide-react';
+import { Download, SlidersHorizontal, Users } from 'lucide-react';
 import type { Dataset } from '@/types';
 import { BUSINESS_TARGETS, type RevenueBasis } from '@/config/targets';
 import { useDashboardData } from '@/hooks/useDashboardData';
@@ -20,6 +20,7 @@ import { DataTable, type Column } from '@/components/tables/DataTable';
 import { TrajectoryChart, type TrajectoryMetric } from '@/components/charts/TrajectoryChart';
 import { AlertGrid } from '@/components/alerts/AlertGrid';
 import { int, pct, pctSigned, truncate, usd } from '@/utils/format';
+import { downloadCsv, type CsvColumn } from '@/utils/csv';
 import '../pages.css';
 
 interface CustomerRow {
@@ -54,7 +55,7 @@ export function CustomerInsights({
   const [grain, setGrain] = useState<TimeGrain>('quarter');
 
   const customers = useMemo(
-    () => buildCustomerRows(ds, data.rows, data.comparison, basis),
+    () => buildCustomerRows(ds, data.rows, data.comparison, basis, 400),
     [ds, data.rows, data.comparison, basis],
   );
 
@@ -171,6 +172,33 @@ export function CustomerInsights({
     },
   ];
 
+  // Export the full ranked set in view — raw numbers, not the formatted cells,
+  // so the file is analysable rather than a screenshot of the table.
+  const csvColumns: CsvColumn<CustomerRow>[] = [
+    { header: 'Rank', value: (_r) => 0 },
+    { header: 'Customer ID', value: (r) => r.id },
+    { header: 'Country', value: (r) => r.country },
+    { header: 'Segment', value: (r) => r.segment },
+    { header: 'Spend (USD)', value: (r) => Math.round(r.spend) },
+    { header: 'Orders', value: (r) => r.orders },
+    { header: 'Profit (USD)', value: (r) => Math.round(r.profit) },
+    { header: 'Margin', value: (r) => (r.margin === null ? '' : (r.margin * 100).toFixed(1)) },
+    { header: 'YoY growth %', value: (r) => (r.growth === null ? '' : (r.growth * 100).toFixed(1)) },
+    { header: 'Order lines', value: (r) => r.lines },
+  ];
+  const exportCustomers = () => {
+    // Every customer in the current filter, fully ranked — not the 400-row
+    // display cap. Built here rather than held in state so the interactive
+    // table stays light.
+    const all = buildCustomerRows(ds, data.rows, data.comparison, basis);
+    const ranked = all.map((r, i) => ({ ...r, rank: i + 1 }));
+    const cols = csvColumns.map((c) =>
+      c.header === 'Rank' ? { ...c, value: (r: CustomerRow & { rank: number }) => r.rank } : c,
+    );
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadCsv(`customers_${stamp}`, ranked, cols as CsvColumn<CustomerRow>[]);
+  };
+
   if (data.isEmpty) {
     return (
       <div className="page">
@@ -193,6 +221,18 @@ export function CustomerInsights({
           title="High-value customers"
           span="table"
           subtitle={scopeLabel}
+          tools={
+            <button
+              type="button"
+              className="btn"
+              onClick={exportCustomers}
+              disabled={customers.length === 0}
+              title="Download every customer in the current filter as a CSV, fully ranked"
+            >
+              <Download size={13} />
+              Export all
+            </button>
+          }
           info={
             <InfoDot label="About this table">
               The workbook carries customer IDs but no names. US customer IDs were de-duplicated
@@ -206,7 +246,7 @@ export function CustomerInsights({
             rows={customers}
             columns={columns}
             rowKey={(r) => r.key}
-            maxRows={10}
+            maxRows={15}
             searchText={(r) => `${r.id} ${r.country} ${r.segment}`}
             searchPlaceholder="Search customer, country or segment…"
             initialSort={{ column: 'spend', direction: 'desc' }}
@@ -276,6 +316,8 @@ function buildCustomerRows(
   rows: Int32Array,
   comparison: PeriodComparison | null,
   basis: RevenueBasis,
+  /** Cap for the interactive table; omit to build every customer for export. */
+  limit?: number,
 ): CustomerRow[] {
   const items = buildBreakdown(ds, rows, comparison, 'customer', {
     basis,
@@ -296,7 +338,8 @@ function buildCustomerRows(
     }
   }
 
-  return items.slice(0, 400).map((b) => {
+  const chosen = limit === undefined ? items : items.slice(0, limit);
+  return chosen.map((b) => {
     const ck = firstCountry.get(b.key) ?? 0;
     return {
       key: b.key,

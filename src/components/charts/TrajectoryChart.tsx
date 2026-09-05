@@ -13,21 +13,23 @@ import { LineChart } from 'lucide-react';
 import { pct, pctSigned, usd, usdShort } from '@/utils/format';
 
 /**
- * Revenue and profit as grouped bars, growth as a line.
+ * Revenue as columns, profit as a line.
  *
- * The mark follows what each measure is. Revenue and profit are amounts booked
- * *within* a period, so they get bars — discrete, sitting on a shared zero,
- * comparable side by side. Growth is a rate measured *between* periods, so it
- * gets a line, the only mark that says "this one continues from the last".
+ * Revenue is the volume booked in each period — a discrete amount, so a bar.
+ * Profit is read as a trajectory, "which way is the bottom line heading", so a
+ * line carries it better than a second bar would.
  *
- * The two money series share a single axis rather than getting one each. A
- * second axis would let profit's bar rise as high as revenue's, which is
- * precisely the comparison this card exists to keep honest.
+ * The two sit on their own axes: revenue on the left, profit on the right.
+ * That is the one place a second axis is honest — a line and a bar are never
+ * mistaken for the same measure the way two bars would be, and each series
+ * gets the full height of the plot rather than profit being squashed to a
+ * sliver against revenue's scale. Both axes start at zero, so neither shape is
+ * exaggerated.
  */
 
-export type TrajectoryMetric = 'revenue' | 'profit' | 'growth';
+export type TrajectoryMetric = 'revenue' | 'profit';
 
-const M = { top: 18, right: 46, bottom: 26, left: 54 };
+const M = { top: 20, right: 52, bottom: 26, left: 54 };
 
 export function TrajectoryChart({
   points,
@@ -47,7 +49,6 @@ export function TrajectoryChart({
   const w = size.width;
   const showRevenue = visible.has('revenue');
   const showProfit = visible.has('profit');
-  const showGrowth = visible.has('growth');
 
   const geom = useMemo(() => {
     if (w < 120 || points.length === 0) return null;
@@ -58,77 +59,54 @@ export function TrajectoryChart({
     const band = scaleBand<string>()
       .domain(points.map((p) => p.key))
       .range([0, iw])
-      .paddingInner(0.34)
-      .paddingOuter(0.18);
-
-    // Whichever money series are switched on split the band between them.
-    const moneySeries: TrajectoryMetric[] = [];
-    if (showRevenue) moneySeries.push('revenue');
-    if (showProfit) moneySeries.push('profit');
-
-    const inner = scaleBand<string>()
-      .domain(moneySeries)
-      .range([0, band.bandwidth()])
-      .padding(0.16);
+      .paddingInner(0.62)
+      .paddingOuter(0.34);
 
     const rev = points.map((p) => revenue(p.measures, basis));
     const prof = points.map((p) => p.measures.profit);
 
-    const shown: number[] = [];
-    if (showRevenue) shown.push(...rev);
-    if (showProfit) shown.push(...prof);
-
-    const lo = Math.min(0, min(shown) ?? 0);
-    const hi = max(shown) ?? 1;
-    const yMoney = scaleLinear()
-      .domain([lo, hi === 0 ? 1 : hi * 1.06])
+    const hiRev = max(rev) ?? 1;
+    const yRev = scaleLinear()
+      .domain([0, hiRev === 0 ? 1 : hiRev * 1.08])
       .range([ih, 0])
       .nice(4);
 
-    const growths = points.map((p) => p.yoy).filter((g): g is number => g !== null);
-    const gLo = Math.min(0, ...growths, BUSINESS_TARGETS.revenueGrowth);
-    const gHi = Math.max(...growths, BUSINESS_TARGETS.revenueGrowth, 0.05);
-    // Deliberately not nice()d: rounding a 0–26% range to "nice" bounds pushed
-    // the axis out to −20%..40% and spent half the plot on empty space.
-    const pad = (gHi - gLo) * 0.12 || 0.04;
-    const yGrowth = scaleLinear()
-      .domain([gLo - (gLo < 0 ? pad : 0), gHi + pad])
-      .range([ih, 0]);
+    const loProf = Math.min(0, min(prof) ?? 0);
+    const hiProf = max(prof) ?? 1;
+    const yProf = scaleLinear()
+      .domain([loProf, hiProf === 0 ? 1 : hiProf * 1.14])
+      .range([ih, 0])
+      .nice(4);
 
     const centre = (i: number) => (band(points[i].key) ?? 0) + band.bandwidth() / 2;
 
-    // The line spans only periods that have a prior period to compare against,
-    // so it starts where the comparison starts rather than at an invented zero.
-    const growthPts = points
-      .map((p, i) => ({ i, yoy: p.yoy }))
-      .filter((d): d is { i: number; yoy: number } => d.yoy !== null);
-
-    const growthLine =
-      growthPts.length > 1
-        ? (line<{ i: number; yoy: number }>()
-            .x((d) => centre(d.i))
-            .y((d) => yGrowth(d.yoy))
-            .curve(curveMonotoneX)(growthPts) ?? '')
+    const profLine =
+      points.length > 1
+        ? (line<number>()
+            .x((_, i) => centre(i))
+            .y((v) => yProf(v))
+            .curve(curveMonotoneX)(prof) ?? '')
         : '';
+    // Slimmer columns than before, capped so a filtered single period does not
+    // become a slab.
+    const barW = Math.min(band.bandwidth(), 34);
 
     return {
       iw,
       ih,
       band,
-      inner,
-      yMoney,
-      yGrowth,
+      barW,
+      yRev,
+      yProf,
       rev,
       prof,
       centre,
-      growthPts,
-      growthLine,
-      moneyTicks: yMoney.ticks(4),
-      growthTicks: yGrowth.ticks(4),
+      profLine,
+      revTicks: yRev.ticks(4),
+      profTicks: yProf.ticks(4),
       xTicks: pickTicks(points, iw),
-      hasMoney: moneySeries.length > 0,
     };
-  }, [w, height, points, basis, showRevenue, showProfit]);
+  }, [w, height, points, basis]);
 
   if (points.length === 0) {
     return (
@@ -148,16 +126,9 @@ export function TrajectoryChart({
       title: p.label,
       subtitle: `${p.measures.lines.toLocaleString()} order lines`,
       rows: [
-        {
-          label: 'Revenue',
-          value: usd(revenue(p.measures, basis)),
-          strong: true,
-        },
+        { label: 'Revenue', value: usd(revenue(p.measures, basis)), strong: true },
         { label: 'Profit', value: usd(p.measures.profit) },
-        {
-          label: 'Margin',
-          value: pct(p.measures.grossMargin),
-        },
+        { label: 'Margin', value: pct(p.measures.grossMargin) },
         {
           label: 'YoY growth',
           value: p.yoy === null ? 'no prior period' : pctSigned(p.yoy),
@@ -169,19 +140,6 @@ export function TrajectoryChart({
                 : ('neg' as const),
         },
       ],
-      status:
-        p.yoy === null
-          ? undefined
-          : {
-              level:
-                p.yoy >= BUSINESS_TARGETS.revenueGrowth
-                  ? ('on-target' as const)
-                  : ('off-target' as const),
-              label:
-                p.yoy >= BUSINESS_TARGETS.revenueGrowth
-                  ? `Clears the ${pct(BUSINESS_TARGETS.revenueGrowth, 0)} growth target`
-                  : `${pct(BUSINESS_TARGETS.revenueGrowth - p.yoy)} short of target`,
-            },
     };
   };
 
@@ -204,6 +162,41 @@ export function TrajectoryChart({
     hide();
   };
 
+  // Default emphasis: the peak revenue period. At year grain that is the single
+  // biggest year; at quarter or month grain it is the biggest bucket *within
+  // each year*, so every year keeps a highlighted peak.
+  const highlight = useMemo(() => {
+    const set = new Set<number>();
+    if (points.length === 0) return set;
+    const revOf = (i: number) => revenue(points[i].measures, basis);
+    const isYearGrain = points.every((p) => /^\d{4}$/.test(p.key));
+    if (isYearGrain) {
+      let best = -Infinity;
+      let bi = 0;
+      points.forEach((_p, i) => {
+        const v = revOf(i);
+        if (v > best) {
+          best = v;
+          bi = i;
+        }
+      });
+      set.add(bi);
+    } else {
+      const bestByYear = new Map<string, number>();
+      points.forEach((p, i) => {
+        const y = p.key.slice(0, 4);
+        const cur = bestByYear.get(y);
+        if (cur === undefined || revOf(i) > revOf(cur)) bestByYear.set(y, i);
+      });
+      bestByYear.forEach((i) => set.add(i));
+    }
+    return set;
+  }, [points, basis]);
+
+  // When hovering, the hovered column is the emphasis; otherwise the peaks are.
+  const emphasized = (i: number) => (focus !== null ? focus === i : highlight.has(i));
+  const labelProfitAll = points.length <= 6;
+
   return (
     <div ref={ref} style={{ width: '100%', minHeight: height }}>
       {geom ? (
@@ -211,12 +204,26 @@ export function TrajectoryChart({
           width={w}
           height={height}
           role="img"
-          aria-label="Revenue and profit by period, with year-over-year growth"
+          aria-label="Revenue by period as columns, with profit as a line"
         >
+          <defs>
+            {/* Resting-state hatch for de-emphasised columns: the accent, but
+                ghosted, so a hovered column reads as the solid one. */}
+            <pattern
+              id="traj-hatch"
+              width={5}
+              height={5}
+              patternTransform="rotate(45)"
+              patternUnits="userSpaceOnUse"
+            >
+              <rect width={5} height={5} fill="var(--c-surface)" />
+              <line x1={0} y1={0} x2={0} y2={5} stroke="var(--c-accent)" strokeWidth={1.4} opacity={0.32} />
+            </pattern>
+          </defs>
           <g transform={`translate(${M.left},${M.top})`}>
-            {/* Grid follows whichever axis is carrying marks. */}
-            {(geom.hasMoney ? geom.moneyTicks : geom.growthTicks).map((t) => {
-              const y = geom.hasMoney ? geom.yMoney(t) : geom.yGrowth(t);
+            {/* Grid keyed to the revenue axis when it's shown, else profit. */}
+            {(showRevenue ? geom.revTicks : geom.profTicks).map((t) => {
+              const y = showRevenue ? geom.yRev(t) : geom.yProf(t);
               return (
                 <line
                   key={`g${t}`}
@@ -236,110 +243,92 @@ export function TrajectoryChart({
                 y={0}
                 width={geom.band.bandwidth()}
                 height={geom.ih}
-                fill="var(--c-surface-3)"
-                opacity={0.75}
-                rx={3}
+                fill="var(--c-accent-soft)"
+                opacity={0.6}
+                rx={4}
               />
             ) : null}
 
-            {/* Zero rule, drawn only when a bar can fall below it. */}
-            {geom.hasMoney && geom.yMoney.domain()[0] < 0 ? (
-              <line
-                x1={0}
-                x2={geom.iw}
-                y1={geom.yMoney(0)}
-                y2={geom.yMoney(0)}
-                stroke="var(--c-axis)"
-                strokeWidth={1}
-              />
-            ) : null}
+            {/* Revenue columns. The peak period(s) are solid; the rest are
+                ghosted to a hatch — the emphasis holds in the default view, and
+                a hover moves it to the hovered column. */}
+            {showRevenue
+              ? points.map((p, i) => {
+                  const cx = geom.centre(i);
+                  const y = geom.yRev(geom.rev[i]);
+                  const h = Math.max(1, geom.ih - y);
+                  const on = emphasized(i);
+                  return (
+                    <g key={`bar-${p.key}`}>
+                      <rect
+                        x={cx - geom.barW / 2}
+                        y={y}
+                        width={geom.barW}
+                        height={h}
+                        rx={Math.min(7, geom.barW / 2)}
+                        fill={on ? 'var(--c-accent)' : 'url(#traj-hatch)'}
+                        stroke={on ? 'none' : 'var(--c-accent-line)'}
+                        strokeWidth={on ? 0 : 1}
+                      />
+                    </g>
+                  );
+                })
+              : null}
 
-            {points.map((p, i) => {
-              const bx = geom.band(p.key) ?? 0;
-              const zero = geom.yMoney(0);
-              const dim = focus !== null && focus !== i;
-              return (
-                <g key={`bars-${p.key}`} opacity={dim ? 0.55 : 1}>
-                  {showRevenue ? (
-                    <rect
-                      x={bx + (geom.inner('revenue') ?? 0)}
-                      y={Math.min(geom.yMoney(geom.rev[i]), zero)}
-                      width={geom.inner.bandwidth()}
-                      height={Math.max(1, Math.abs(zero - geom.yMoney(geom.rev[i])))}
-                      rx={2}
-                      fill="var(--c-accent)"
-                    />
-                  ) : null}
-                  {showProfit ? (
-                    <rect
-                      x={bx + (geom.inner('profit') ?? 0)}
-                      y={Math.min(geom.yMoney(geom.prof[i]), zero)}
-                      width={geom.inner.bandwidth()}
-                      height={Math.max(1, Math.abs(zero - geom.yMoney(geom.prof[i])))}
-                      rx={2}
-                      fill={geom.prof[i] < 0 ? 'var(--c-neg)' : 'var(--c-cat-2)'}
-                    />
-                  ) : null}
-                </g>
-              );
-            })}
-
-            {showGrowth ? (
-              <>
-                {/* A reference, not a series: the faintest grey in the system,
-                    with its label parked at the left margin so it never sits on
-                    top of the bars or the growth line. */}
-                <line
-                  x1={0}
-                  x2={geom.iw}
-                  y1={geom.yGrowth(BUSINESS_TARGETS.revenueGrowth)}
-                  y2={geom.yGrowth(BUSINESS_TARGETS.revenueGrowth)}
-                  stroke="var(--c-reference-soft)"
-                  strokeWidth={1}
-                  strokeDasharray="3 3"
-                />
-                <text
-                  x={2}
-                  y={geom.yGrowth(BUSINESS_TARGETS.revenueGrowth) - 6}
-                  textAnchor="start"
-                  className="chart-ref-label chart-ref-label--quiet"
-                >
-                  {pct(BUSINESS_TARGETS.revenueGrowth, 0)} target
-                </text>
-              </>
-            ) : null}
-
-            {/* The rate that connects periods. */}
-            {showGrowth && geom.growthLine ? (
+            {/* Profit — a monotone line with dots. */}
+            {showProfit && geom.profLine ? (
               <path
-                d={geom.growthLine}
+                d={geom.profLine}
                 fill="none"
-                stroke="var(--c-ink-2)"
-                strokeWidth={2}
+                stroke="var(--c-cat-2)"
+                strokeWidth={2.25}
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             ) : null}
-            {showGrowth
-              ? geom.growthPts.map((d) => (
-                  <circle
-                    key={`gp-${points[d.i].key}`}
-                    cx={geom.centre(d.i)}
-                    cy={geom.yGrowth(d.yoy)}
-                    r={focus === d.i ? 5 : 3.5}
-                    fill={d.yoy >= BUSINESS_TARGETS.revenueGrowth ? 'var(--c-pos)' : 'var(--c-neg)'}
-                    stroke="var(--c-surface)"
-                    strokeWidth={1.75}
-                  />
-                ))
+            {showProfit
+              ? points.map((p, i) => {
+                  const cx = geom.centre(i);
+                  const cy = geom.yProf(geom.prof[i]);
+                  const neg = geom.prof[i] < 0;
+                  const on = emphasized(i);
+                  // The label rides above the dot; drop it if that lands over
+                  // the revenue column at this period.
+                  const overBar = showRevenue && cy - 5 > geom.yRev(geom.rev[i]);
+                  const showLabel = (labelProfitAll || on) && !overBar;
+                  return (
+                    <g key={`pp-${p.key}`}>
+                      {showLabel ? (
+                        <text
+                          x={cx}
+                          y={cy - 9}
+                          textAnchor="middle"
+                          className="chart-value-label"
+                          fill="var(--c-cat-2)"
+                        >
+                          {usdShort(geom.prof[i])}
+                        </text>
+                      ) : null}
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={on ? 4.5 : 3}
+                        fill={neg ? 'var(--c-neg)' : 'var(--c-cat-2)'}
+                        stroke="var(--c-surface)"
+                        strokeWidth={on ? 2 : 1.5}
+                      />
+                    </g>
+                  );
+                })
               : null}
 
-            {geom.hasMoney
-              ? geom.moneyTicks.map((t) => (
+            {/* Left axis — revenue */}
+            {showRevenue
+              ? geom.revTicks.map((t) => (
                   <text
-                    key={`my${t}`}
+                    key={`ry${t}`}
                     x={-9}
-                    y={geom.yMoney(t)}
+                    y={geom.yRev(t)}
                     dy="0.32em"
                     textAnchor="end"
                     className="chart-axis-label"
@@ -348,20 +337,23 @@ export function TrajectoryChart({
                   </text>
                 ))
               : null}
-            {showGrowth
-              ? geom.growthTicks.map((t) => (
+
+            {/* Right axis — profit */}
+            {showProfit
+              ? geom.profTicks.map((t) => (
                   <text
-                    key={`gy${t}`}
+                    key={`py${t}`}
                     x={geom.iw + 9}
-                    y={geom.yGrowth(t)}
+                    y={geom.yProf(t)}
                     dy="0.32em"
                     textAnchor="start"
                     className="chart-axis-label chart-axis-label--alt"
                   >
-                    {pct(t, 0)}
+                    {usdShort(t)}
                   </text>
                 ))
               : null}
+
             {geom.xTicks.map((i) => (
               <text
                 key={`x${points[i].key}`}

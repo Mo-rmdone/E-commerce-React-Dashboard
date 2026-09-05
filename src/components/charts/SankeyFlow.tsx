@@ -55,7 +55,8 @@ export function SankeyFlow({
   onSelectSource,
   onSelectTarget,
   onDrillSource,
-  labelWidth = 140,
+  labelWidth = 150,
+  rightLabelWidth,
 }: {
   graph: FlowGraph;
   height?: number;
@@ -72,20 +73,26 @@ export function SankeyFlow({
   onSelectSource: (key: number) => void;
   onSelectTarget: (key: number) => void;
   onDrillSource?: (node: FlowNode) => void;
+  /** Left inset for source labels. */
   labelWidth?: number;
+  /** Right inset for target labels; defaults wider, since subcategory and
+   *  product names are far longer than the category names on the left. */
+  rightLabelWidth?: number;
 }) {
   const [ref, size] = useElementSize<HTMLDivElement>();
   const { model, position, show, hide } = useChartTooltip();
   const [hover, setHover] = useState<string | null>(null);
 
   const w = size.width;
+  // Target labels get more room than source labels — the point of this fix.
+  const rightW = rightLabelWidth ?? Math.min(196, Math.max(150, w * 0.36));
 
   const layout = useMemo(() => {
     if (w < 220 || graph.nodes.length === 0 || graph.links.length === 0) return null;
 
     const inner = {
       x0: labelWidth,
-      x1: Math.max(labelWidth + 40, w - labelWidth),
+      x1: Math.max(labelWidth + 40, w - rightW),
       y0: 4,
       y1: Math.max(40, height - 4),
     };
@@ -155,7 +162,7 @@ export function SankeyFlow({
     }
 
     return { nodes, links };
-  }, [graph, w, height, labelWidth, nodeTooltip, linkTooltip]);
+  }, [graph, w, height, labelWidth, rightW, nodeTooltip, linkTooltip]);
 
   if (graph.nodes.length === 0) {
     return (
@@ -266,7 +273,13 @@ export function SankeyFlow({
                   textAnchor={isSource ? 'end' : 'start'}
                   className={`sankey__label ${sel ? 'sankey__label--sel' : ''}`}
                 >
-                  {truncate(d.label, Math.max(10, Math.floor(labelWidth / 6.2)))}
+                  <title>{d.label}</title>
+                  {truncate(
+                    d.label,
+                    isSource
+                      ? Math.max(10, Math.floor((labelWidth - LABEL_PAD) / 6.2))
+                      : Math.max(12, Math.floor((rightW - LABEL_PAD) / 5.9)),
+                  )}
                 </text>
               </g>
             );

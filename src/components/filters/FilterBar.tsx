@@ -33,6 +33,7 @@ export function FilterBar({
       segment: ds.dims.segments.map((s, i) => ({ value: i, label: s })),
       category: ds.dims.categories.map((c, i) => ({ value: i, label: c })),
       country: ds.dims.countries.map((c, i) => ({ value: i, label: c.name })),
+      product: ds.dims.products.map((p, i) => ({ value: i, label: p.name })),
     }),
     [ds],
   );
@@ -83,6 +84,13 @@ export function FilterBar({
           options={options.category}
           selected={filters.category}
           onChange={(v) => setDimension('category', v, 'Category filter')}
+        />
+        <MultiSelect
+          label={DIMENSION_LABEL.product}
+          options={options.product}
+          selected={filters.product}
+          onChange={(v) => setDimension('product', v, 'Product filter')}
+          searchable
         />
 
         <div className="fbar__spacer" />

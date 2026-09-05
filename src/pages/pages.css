@@ -21,8 +21,8 @@
 .grid--prod {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   grid-template-areas:
-    'tree    scatter'
-    'rank    heat';
+    'tree scatter'
+    'rank heat';
 }
 
 .grid--cust {

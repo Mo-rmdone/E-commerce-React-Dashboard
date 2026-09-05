@@ -179,9 +179,15 @@
   border-collapse: separate;
   border-spacing: 2px;
   width: 100%;
+  /* Fixed layout so every category column is the same width, regardless of
+     whether its cells read $4K or $77.2K. Without it the table sizes each
+     column to its widest number and the boxes come out uneven. */
+  table-layout: fixed;
+  min-width: 560px;
   font-size: var(--fs-xs);
 }
 .heat__corner {
+  width: 120px;
   text-align: left;
   padding: 0 var(--sp-2) var(--sp-1) 0;
   position: sticky;
@@ -190,16 +196,29 @@
   z-index: 2;
 }
 .heat__colhead {
-  padding: 0 0 var(--sp-1);
+  padding: 0 1px var(--sp-1);
   vertical-align: bottom;
-  white-space: nowrap;
+  overflow: hidden;
+}
+.heat__colhead-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
 }
 .heat__colbtn {
   font-size: var(--fs-micro);
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.02em;
   color: var(--c-muted);
-  padding: 2px 4px;
+  /* Wrap within the fixed column instead of overflowing into its neighbour. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.15;
+  text-align: center;
+  max-width: 100%;
+  padding: 2px 3px;
   border-radius: var(--r-xs);
   transition: color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
 }
@@ -213,9 +232,9 @@
 }
 .heat__sort {
   color: var(--c-faint);
-  padding: 2px;
+  padding: 1px;
   border-radius: var(--r-xs);
-  vertical-align: middle;
+  display: inline-flex;
 }
 .heat__sort:hover,
 .heat__sort[aria-pressed='true'] {
@@ -257,11 +276,11 @@
 .heat__cellbtn {
   display: block;
   width: 100%;
-  min-width: 58px;
+  min-width: 0;
   padding: 5px 6px;
   border-radius: var(--r-xs);
   font-size: var(--fs-micro);
-  text-align: right;
+  text-align: center;
   transition: outline-color var(--t-fast) var(--ease);
   outline: 1px solid transparent;
 }
@@ -269,15 +288,34 @@
   outline-color: var(--c-ink);
 }
 .heat__total {
+  width: 72px;
   font-size: var(--fs-micro);
   color: var(--c-muted);
-  text-align: right;
+  text-align: center;
   padding-left: var(--sp-2);
   white-space: nowrap;
 }
 .heat__row--sel .heat__rowbtn {
   color: var(--c-accent);
   font-weight: 600;
+}
+
+.heat__pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-3);
+  padding-top: var(--sp-3);
+  margin-top: var(--sp-2);
+  border-top: 1px solid var(--c-rule-soft);
+  flex: none;
+}
+.heat__pager-label {
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  min-width: 128px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ------------------------------------------------------- chart chrome */
@@ -389,4 +427,67 @@
 .map__controls .btn:disabled {
   opacity: 0.35;
   cursor: default;
+}
+
+/* ------------------------------------------------------- decomposition tree */
+
+.dtree {
+  flex: 1;
+  min-height: 0;
+  /* The scroll area is taken out of flow (absolute, below) so the SVG's height
+     never feeds back into the height this element is measured at — otherwise a
+     tall drawing would grow the card, which would grow the drawing, and so on.
+     The card's row height is set by its neighbour; the tree fills it. */
+  position: relative;
+}
+.dtree__scroll {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  /* Reserve the vertical scrollbar's width at all times so the drawing area
+     stays a constant width — a scrollbar appearing on expand never forces a
+     horizontal scrollbar in turn. */
+  scrollbar-gutter: stable;
+}
+.dtree__link {
+  fill: none;
+  stroke-width: 1.25;
+  opacity: 0.35;
+}
+.dtree__node {
+  cursor: pointer;
+}
+.dtree__node:hover .dtree__label {
+  fill: var(--c-ink);
+}
+.dtree__label {
+  font-size: 11px;
+  fill: var(--c-ink-2);
+  font-weight: 500;
+}
+.dtree__value {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  fill: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+}
+.dtree__share {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  fill: var(--c-ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.dtree__expand {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  fill: var(--c-faint);
+  text-anchor: middle;
+  font-weight: 600;
+}
+.dtree__node:hover .dtree__expand {
+  fill: var(--c-accent);
+}
+.dtree__expand--on {
+  fill: var(--c-accent);
 }

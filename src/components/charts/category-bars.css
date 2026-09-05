@@ -1,0 +1,139 @@
+/* ------------------------------------------------- grouped category bars */
+
+.cbars {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+.cbars__scroll {
+  position: absolute;
+  inset: 0;
+  /* Rows are sized to fit, so this normally never scrolls; auto is only a
+     safety valve for a card too short to hold the ranking. */
+  overflow: auto;
+}
+
+.cbars__table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+/* Category band down the left, spanning its subcategory rows. */
+.cbars__cat {
+  width: 104px;
+  vertical-align: middle;
+  text-align: left;
+  padding: 2px 10px 2px 2px;
+  border-top: 1px solid var(--c-rule);
+  cursor: pointer;
+  font-weight: 600;
+  line-height: 1.2;
+}
+.cbars__grouptop > .cbars__sub,
+.cbars__grouptop > .cbars__barcell {
+  border-top: 1px solid var(--c-rule);
+}
+.cbars tr:first-child .cbars__cat,
+.cbars tr:first-child .cbars__sub,
+.cbars tr:first-child .cbars__barcell {
+  border-top: none;
+}
+.cbars__cat-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: baseline;
+}
+.cbars__cat-name {
+  color: var(--c-ink);
+  font-size: var(--fs-sm);
+}
+.cbars__cat-meta {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 2px;
+  font-size: 10px;
+  color: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+}
+.cbars__cat-share {
+  font-weight: 700;
+  color: var(--c-ink-2);
+}
+.cbars__cat.is-sel .cbars__cat-name,
+.cbars__cat:hover .cbars__cat-name {
+  color: var(--c-accent);
+}
+
+.cbars__sub {
+  width: 178px;
+  padding: 0 10px 0 4px;
+  color: var(--c-ink-2);
+  font-size: 11px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.cbars__sub:hover,
+.cbars__sub.is-sel {
+  color: var(--c-accent);
+  font-weight: 600;
+}
+
+.cbars__barcell {
+  padding: 0 8px 0 0;
+  cursor: pointer;
+}
+.cbars__track {
+  position: relative;
+}
+.cbars__fill {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border-radius: 3px;
+  min-width: 2px;
+}
+.cbars__fill.is-pos {
+  background: var(--c-pos);
+}
+.cbars__fill.is-neg {
+  background: var(--c-neg);
+}
+/* Zero baseline for the diverging (profit) view. */
+.cbars__zero {
+  position: absolute;
+  left: 50%;
+  top: 2px;
+  bottom: 2px;
+  width: 1px;
+  background: var(--c-rule-strong);
+}
+.cbars__val {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--c-ink);
+  white-space: nowrap;
+  pointer-events: none;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+.cbars__val--left {
+  flex-direction: row;
+  text-align: right;
+}
+.cbars__val.val--neg {
+  color: var(--c-neg);
+}
+.cbars__val-share {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--c-muted);
+}

@@ -37,7 +37,7 @@ export function ExecutiveOverview({
   const [mapMetric, setMapMetric] = useState<MapMetric>('sales');
   const [grain, setGrain] = useState<TimeGrain>('year');
   const [trajectory, setTrajectory] = useState<Set<TrajectoryMetric>>(
-    () => new Set<TrajectoryMetric>(['revenue', 'profit', 'growth']),
+    () => new Set<TrajectoryMetric>(['revenue', 'profit']),
   );
 
   const countries = useBreakdown(ds, data, 'country');
@@ -288,9 +288,10 @@ export function ExecutiveOverview({
           span="traj"
           info={
             <InfoDot label="About this chart">
-              Revenue and profit use separate value axes — they differ by an order of magnitude
-              and one shared axis would flatten profit onto the baseline. Bars show year-over-year
-              growth against the {pct(BUSINESS_TARGETS.revenueGrowth, 0)} target.
+              Revenue is the volume booked each period, shown as columns on the left axis; profit
+              is read as a trajectory, shown as a line on the right axis. Each series keeps its own
+              zero-based scale so neither shape is squashed or exaggerated. Year-over-year growth
+              for each period is in the tooltip.
             </InfoDot>
           }
           tools={
@@ -299,8 +300,7 @@ export function ExecutiveOverview({
                 {(
                   [
                     ['revenue', 'Revenue', 'var(--c-accent)', 'bar'],
-                    ['profit', 'Profit', 'var(--c-cat-2)', 'bar'],
-                    ['growth', 'Growth', 'var(--c-ink-2)', 'line'],
+                    ['profit', 'Profit', 'var(--c-cat-2)', 'line'],
                   ] as [TrajectoryMetric, string, string, 'bar' | 'line'][]
                 ).map(([key, label, color, shape]) => (
                   <button
@@ -589,23 +589,26 @@ function SegmentTable({
  * dashboard would carry.
  */
 function TrajectoryNarrative({ series }: { series: ReturnType<typeof buildTimeSeries> }) {
-  const withGrowth = series.filter((p) => p.yoy !== null);
-  if (withGrowth.length === 0) {
+  const active = series.filter((p) => p.measures.lines > 0);
+  if (active.length < 2) {
     return (
       <p className="narrative">
         <Info size={12} aria-hidden />
-        Not enough history in this filter to measure growth — a full prior period is needed.
+        Not enough periods in this filter to describe a trajectory.
       </p>
     );
   }
-  const hits = withGrowth.filter((p) => (p.yoy as number) >= BUSINESS_TARGETS.revenueGrowth);
-  const last = withGrowth[withGrowth.length - 1];
+  const first = active[0];
+  const last = active[active.length - 1];
+  const profitUp = last.measures.profit >= first.measures.profit;
+  const marginNow = last.measures.grossMargin;
   return (
     <p className="narrative">
       <Info size={12} aria-hidden />
-      {hits.length} of {withGrowth.length} periods cleared the{' '}
-      {pct(BUSINESS_TARGETS.revenueGrowth, 0)} growth target. Latest: {last.label} at{' '}
-      <strong>{pctSigned(last.yoy)}</strong>.
+      Profit {profitUp ? 'rose' : 'fell'} from <strong>{usdShort(first.measures.profit)}</strong> in{' '}
+      {first.label} to <strong>{usdShort(last.measures.profit)}</strong> in {last.label}, a{' '}
+      {pct(marginNow)} margin — against revenue of{' '}
+      <strong>{usdShort(revenue(last.measures, 'gross'))}</strong>.
     </p>
   );
 }

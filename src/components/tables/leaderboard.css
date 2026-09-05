@@ -1,0 +1,242 @@
+/*
+ * Leaderboard. Each row is a fixed grid so ranks, names, bars, values and
+ * pills line up as columns without a real <table>.
+ */
+.lb {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.lb__search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  margin-bottom: 10px;
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-sm);
+  background: var(--c-surface-2);
+  color: var(--c-muted);
+}
+.lb__search:focus-within {
+  border-color: var(--c-accent);
+  background: var(--c-surface);
+}
+.lb__search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--c-ink);
+  font: inherit;
+  font-size: var(--fs-sm);
+  outline: none;
+}
+.lb__search input::placeholder {
+  color: var(--c-muted);
+}
+.lb__search-clear {
+  display: inline-flex;
+  border: none;
+  background: transparent;
+  color: var(--c-muted);
+  cursor: pointer;
+  padding: 0;
+}
+.lb__search-clear:hover {
+  color: var(--c-ink);
+}
+
+.lb__head {
+  display: grid;
+  grid-template-columns: 34px 1fr auto;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-1) 8px;
+  border-bottom: 1px solid var(--c-rule-soft);
+}
+.lb__head-rank,
+.lb__head-name,
+.lb__head-right {
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+.lb__head-right {
+  text-align: right;
+}
+
+.lb__row {
+  display: grid;
+  grid-template-columns: 34px 32px minmax(0, 1fr) 132px 78px 82px;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 7px var(--sp-1);
+  border-bottom: 1px solid var(--c-rule-soft);
+  cursor: pointer;
+  border-radius: var(--r-sm);
+  transition: background var(--t-fast) var(--ease);
+}
+.lb__row:last-child {
+  border-bottom: none;
+}
+.lb__row:hover {
+  background: var(--c-surface-2);
+}
+.lb__row--sel {
+  background: var(--c-accent-soft);
+}
+.lb__row:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: -2px;
+}
+
+/* rank badge — medals for the top three, plain for the rest */
+.lb__rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  width: 26px;
+  height: 26px;
+  border-radius: var(--r-pill);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-muted);
+  background: var(--c-surface-3);
+}
+.lb__rank--gold {
+  background: var(--c-warn-soft);
+  color: var(--c-warn);
+}
+.lb__rank--silver {
+  background: var(--c-neutral-soft);
+  color: var(--c-ink-2);
+}
+.lb__rank--bronze {
+  background: color-mix(in srgb, #d8834f 22%, var(--c-surface));
+  color: #9a5327;
+}
+:root[data-theme='dark'] .lb__rank--bronze {
+  background: color-mix(in srgb, #d8834f 26%, var(--c-surface));
+  color: #e0a578;
+}
+
+/* identity chip */
+.lb__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--r-pill);
+  background: var(--c-accent-soft);
+  color: var(--c-accent);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.lb__id {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.lb__name {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--c-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lb__sub {
+  font-size: var(--fs-micro);
+  color: var(--c-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* magnitude bar */
+.lb__bar {
+  height: 8px;
+  border-radius: var(--r-pill);
+  background: var(--c-track);
+  overflow: hidden;
+}
+.lb__barfill {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  border-radius: var(--r-pill);
+  background: var(--c-accent);
+}
+
+.lb__val {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-ink);
+  text-align: right;
+  white-space: nowrap;
+}
+.lb__val--neg {
+  color: var(--c-neg);
+}
+
+/* delta pill */
+.lb__pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  justify-self: end;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.lb__pill--up {
+  background: var(--c-pos-soft);
+  color: var(--c-pos);
+}
+.lb__pill--down {
+  background: var(--c-neg-soft);
+  color: var(--c-neg);
+}
+.lb__pill--none {
+  background: var(--c-neutral-soft);
+  color: var(--c-muted);
+}
+.lb__pill-arrow {
+  font-size: 8px;
+  line-height: 1;
+}
+
+.lb__empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sp-6);
+  font-size: var(--fs-sm);
+  color: var(--c-muted);
+  text-align: center;
+}
+
+/* Bar and pill fold away first on a narrow card; name and value stay. */
+@media (max-width: 1180px) {
+  .lb__row {
+    grid-template-columns: 34px 32px minmax(0, 1fr) 78px 82px;
+  }
+  .lb__bar {
+    display: none;
+  }
+}

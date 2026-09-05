@@ -109,49 +109,91 @@
 
 .health {
   display: flex;
-  gap: var(--sp-4);
-  padding: var(--sp-3);
+  flex-direction: column;
+  gap: var(--sp-3);
+  padding: var(--sp-4);
   border: 1px solid var(--c-rule-soft);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-md);
   background: var(--c-surface);
   flex: none;
 }
 
+.health__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.health__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  flex: none;
+}
+.health__badge--pos {
+  color: var(--c-pos);
+  background: var(--c-pos-soft);
+}
+.health__badge--warn {
+  color: var(--c-warn);
+  background: var(--c-warn-soft);
+}
+.health__badge--neg {
+  color: var(--c-neg);
+  background: var(--c-neg-soft);
+}
+
+.health__main {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+}
 .health__dial {
   position: relative;
   flex: none;
-  width: 76px;
-  height: 76px;
 }
 .health__score {
   position: absolute;
   inset: 0;
   display: flex;
-  align-items: baseline;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
   gap: 1px;
-  padding-top: 27px;
-}
-.health__score .num {
-  font-size: 21px;
-  font-weight: 600;
-  letter-spacing: -0.03em;
   line-height: 1;
 }
+.health__score .num {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--c-ink);
+}
 .health__max {
-  font-size: var(--fs-micro);
+  font-size: var(--fs-xs);
   color: var(--c-faint);
 }
 
-.health__text {
+.health__summary {
   flex: 1;
   min-width: 0;
 }
 .health__word {
-  font-size: var(--fs-md);
-  font-weight: 600;
+  font-size: var(--fs-xl);
+  font-weight: 700;
   letter-spacing: var(--ls-tight);
-  margin-top: 1px;
+  line-height: 1.1;
+}
+.health__meta {
+  margin-top: 4px;
+  font-size: var(--fs-sm);
+  color: var(--c-muted);
+}
+.health__meta .num {
+  color: var(--c-ink-2);
+  font-weight: 700;
 }
 .health__word--pos { color: var(--c-pos); }
 .health__word--warn { color: var(--c-warn); }

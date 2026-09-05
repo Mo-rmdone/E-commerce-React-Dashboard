@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { scaleLinear } from 'd3-scale';
-import { Grid3x3, ArrowUpDown } from 'lucide-react';
+import { Grid3x3, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ChartTooltip, type TooltipModel } from '@/components/tooltips/Tooltip';
 import { useChartTooltip } from './useChartTooltip';
 import { EmptyState } from '@/components/primitives';
@@ -39,6 +39,10 @@ export function Heatmap({
   onSelectCol,
   onSelectCell,
   rowLabelWidth = 132,
+  page,
+  pageCount,
+  rangeLabel,
+  onPage,
 }: {
   rows: HeatmapAxis[];
   cols: HeatmapAxis[];
@@ -50,6 +54,11 @@ export function Heatmap({
   onSelectCol: (key: number) => void;
   onSelectCell?: (row: number, col: number) => void;
   rowLabelWidth?: number;
+  /** Zero-based page index; enables the footer pager when pageCount > 1. */
+  page?: number;
+  pageCount?: number;
+  rangeLabel?: string;
+  onPage?: (page: number) => void;
 }) {
   const { model, position, show, hide } = useChartTooltip();
   const [sortCol, setSortCol] = useState<number | null>(null);
@@ -100,24 +109,26 @@ export function Heatmap({
               </th>
               {cols.map((c) => (
                 <th key={c.key} scope="col" className="heat__colhead">
-                  <button
-                    type="button"
-                    className="heat__colbtn"
-                    aria-pressed={selectedCols.includes(c.key)}
-                    onClick={() => onSelectCol(c.key)}
-                    title={`Filter to ${c.label}`}
-                  >
-                    {truncate(c.label, 16)}
-                  </button>
-                  <button
-                    type="button"
-                    className="heat__sort"
-                    aria-label={`Sort countries by ${c.label}`}
-                    aria-pressed={sortCol === c.key}
-                    onClick={() => setSortCol((s) => (s === c.key ? null : c.key))}
-                  >
-                    <ArrowUpDown size={10} />
-                  </button>
+                  <div className="heat__colhead-inner">
+                    <button
+                      type="button"
+                      className="heat__colbtn"
+                      aria-pressed={selectedCols.includes(c.key)}
+                      onClick={() => onSelectCol(c.key)}
+                      title={`Filter to ${c.label}`}
+                    >
+                      {c.label}
+                    </button>
+                    <button
+                      type="button"
+                      className="heat__sort"
+                      aria-label={`Sort countries by ${c.label}`}
+                      aria-pressed={sortCol === c.key}
+                      onClick={() => setSortCol((s) => (s === c.key ? null : c.key))}
+                    >
+                      <ArrowUpDown size={10} />
+                    </button>
+                  </div>
                 </th>
               ))}
               <th className="heat__total" scope="col">
@@ -180,6 +191,31 @@ export function Heatmap({
           </tbody>
         </table>
       </div>
+
+      {pageCount && pageCount > 1 && onPage ? (
+        <div className="heat__pager">
+          <button
+            type="button"
+            className="btn btn--icon"
+            aria-label="Previous countries"
+            disabled={(page ?? 0) <= 0}
+            onClick={() => onPage((page ?? 0) - 1)}
+          >
+            <ChevronLeft size={15} />
+          </button>
+          <span className="heat__pager-label num">{rangeLabel}</span>
+          <button
+            type="button"
+            className="btn btn--icon"
+            aria-label="Next countries"
+            disabled={(page ?? 0) >= pageCount - 1}
+            onClick={() => onPage((page ?? 0) + 1)}
+          >
+            <ChevronRight size={15} />
+          </button>
+        </div>
+      ) : null}
+
       <ChartTooltip model={model} position={position} />
     </div>
   );

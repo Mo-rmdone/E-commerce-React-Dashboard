@@ -1,0 +1,176 @@
+.ptable {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ptable__scroll {
+  overflow: auto;
+  min-height: 0;
+  flex: 1;
+}
+.ptable__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-xs);
+}
+
+.ptable__h {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--c-surface);
+  text-align: left;
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-muted);
+  padding: 0 var(--sp-2) 8px;
+  border-bottom: 1px solid var(--c-rule);
+  white-space: nowrap;
+}
+.ptable__h--cat { width: 150px; }
+.ptable__h--num { width: 132px; }
+
+.ptable__legend {
+  display: inline-flex;
+  gap: 10px;
+  margin-left: var(--sp-3);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.ptable__key {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--c-muted);
+}
+.ptable__key::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1px solid;
+}
+.ptable__key--loss::before { background: var(--c-neg-soft); border-color: var(--c-neg); }
+.ptable__key--thin::before { background: var(--c-warn-soft); border-color: var(--c-warn); }
+.ptable__key--healthy::before { background: var(--c-pos-soft); border-color: var(--c-pos); }
+
+/* category group cell (rowspan) */
+.ptable__cat {
+  vertical-align: top;
+  text-align: left;
+  padding: 10px var(--sp-2) 10px var(--sp-1);
+  border-bottom: 1px solid var(--c-rule);
+  border-top: 1px solid var(--c-rule);
+  cursor: pointer;
+  font-weight: 400;
+}
+.ptable__cat:hover { background: var(--c-surface-2); }
+.ptable__cat--sel { background: var(--c-accent-soft); }
+.ptable__cat-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: 1px;
+}
+.ptable__cat-name {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--c-ink);
+}
+.ptable__cat-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-top: 6px;
+  padding-left: 15px;
+  font-size: var(--fs-xs);
+  color: var(--c-ink-2);
+}
+.ptable__cat-share { color: var(--c-muted); font-size: var(--fs-micro); }
+
+/* subcategory cell */
+.ptable__sub {
+  padding: 0 var(--sp-2);
+  border-bottom: 1px solid var(--c-rule-soft);
+  cursor: pointer;
+  vertical-align: middle;
+  height: 42px;
+}
+.ptable__sub:hover { background: var(--c-surface-2); }
+.ptable__sub--sel { background: var(--c-accent-soft); }
+.ptable__sub-name {
+  display: block;
+  color: var(--c-ink);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 158px;
+}
+.ptable__sub-margin { color: var(--c-muted); font-size: var(--fs-micro); }
+
+/* sales + profit bars */
+.ptable__bars {
+  padding: 0 var(--sp-2);
+  border-bottom: 1px solid var(--c-rule-soft);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.ptable__bar-track {
+  position: relative;
+  display: inline-block;
+  width: 78px;
+  height: 9px;
+  border-radius: var(--r-pill);
+  background: var(--c-track);
+  vertical-align: middle;
+  overflow: hidden;
+}
+.ptable__bar-track--diverge { overflow: visible; }
+.ptable__bar-fill {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-radius: var(--r-pill);
+  background: var(--c-accent);
+}
+.ptable__bar-fill--pos { background: var(--c-pos); }
+.ptable__bar-fill--neg { background: var(--c-neg); }
+.ptable__bar-zero {
+  position: absolute;
+  left: 50%;
+  top: -2px;
+  bottom: -2px;
+  width: 1px;
+  background: var(--c-axis);
+}
+.ptable__bar-val {
+  display: inline-block;
+  margin-left: 8px;
+  font-size: var(--fs-micro);
+  color: var(--c-ink-2);
+  min-width: 46px;
+}
+
+/* product strip */
+.ptable__strip {
+  padding: 0 var(--sp-2);
+  border-bottom: 1px solid var(--c-rule-soft);
+  vertical-align: middle;
+}
+.ptable__dot {
+  cursor: pointer;
+  opacity: 0.85;
+  stroke-width: 1;
+}
+.ptable__dot:hover { opacity: 1; }
+.ptable__dot--loss { fill: var(--c-neg-soft); stroke: var(--c-neg); }
+.ptable__dot--thin { fill: var(--c-warn-soft); stroke: var(--c-warn); }
+.ptable__dot--healthy { fill: var(--c-pos-soft); stroke: var(--c-pos); }
