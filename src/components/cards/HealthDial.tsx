@@ -57,7 +57,6 @@ export function HealthDial({
           </svg>
           <div className="health__score">
             <span className="num">{health.score}</span>
-            <span className="health__max">/100</span>
           </div>
         </div>
 

@@ -71,11 +71,6 @@
   line-height: 1;
   color: var(--c-ink);
 }
-.health__max {
-  font-size: var(--fs-xs);
-  color: var(--c-faint);
-}
-
 .health__summary {
   flex: 1;
   min-width: 0;

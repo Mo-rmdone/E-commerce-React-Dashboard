@@ -14,6 +14,21 @@
   min-height: 0;
 }
 
+/* Severity tabs. Counts live in the labels, so the row doubles as the summary
+   of what the panel holds — four criticals is legible without opening the tab. */
+.signals__tabs {
+  flex: none;
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--c-rule-soft);
+}
+.signals__tabs .seg {
+  flex-wrap: wrap;
+  gap: 2px;
+}
+.signals__tabs .seg__btn {
+  font-size: var(--fs-xs);
+}
+
 /*
  * flex-basis 0, not auto. With `auto` the list's full content height propagates
  * up through the card and sets the grid row, which pushed the ten-row table
@@ -27,9 +42,9 @@
   flex-direction: column;
   flex: 1 1 0;
   /* A floor, so the findings are never squeezed to a sliver by the blocks
-     above and below them. Below this the card grows and takes the table with
-     it; above it, the list scrolls. */
-  min-height: 300px;
+     above and below them, and so the card does not resize as tabs change.
+     Sized to the tallest single-severity view, which is why nothing scrolls. */
+  min-height: 274px;
   overflow-y: auto;
   scrollbar-gutter: stable;
 }
@@ -39,7 +54,7 @@
   border-bottom: 1px solid var(--c-rule-soft);
 }
 .signal:first-child {
-  padding-top: 0;
+  padding-top: var(--sp-2);
 }
 .signal:last-child {
   border-bottom: none;

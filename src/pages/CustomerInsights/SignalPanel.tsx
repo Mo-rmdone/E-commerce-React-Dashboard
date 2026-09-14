@@ -1,17 +1,20 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import type { Alert, AlertSeverity } from '@/data/metrics/alerts';
 import type { FilterDimension } from '@/types';
+import { Segmented } from '@/components/primitives';
 import './signals.css';
 
 /**
- * Section 02, right column — strategic signals.
+ * Strategic signals — the findings the rest of the dashboard generates, read
+ * one severity at a time.
  *
- * The same findings the rest of the dashboard generates, compressed to a
- * prioritised list: a severity dot, a title, the number, one line of why. It
- * stays deliberately quiet so the flow diagram beside it remains the thing the
- * eye lands on first — a signal here is a pointer into the page, not the
- * analysis itself.
+ * Severity is a tab rather than a sort order. Stacked into a single list the
+ * six findings ran past the height of the card and the panel scrolled, which
+ * hid the low-severity ones behind a gesture nobody makes; split by severity
+ * each view is one or two findings and the counts sit on the tabs, so nothing
+ * is hidden and nothing scrolls. There is deliberately no "All": it would be
+ * the scrolling list this replaced.
  */
 
 /**
@@ -47,25 +50,43 @@ const SEVERITY_WORD: Record<AlertSeverity, string> = {
   positive: 'On track',
 };
 
+/** Worst first, so the default tab is the one that needs attention. */
+const SEVERITY_ORDER: AlertSeverity[] = ['critical', 'warning', 'opportunity', 'positive'];
+
 export function SignalPanel({
   signals,
   onAct,
-  limit,
   header,
   footer,
 }: {
   signals: Alert[];
   onAct: (dimension: FilterDimension, value: number) => void;
-  /** Severity-sorted upstream; omit to show every signal. */
-  limit?: number;
-  /** Pinned above the list — the score the signals explain. */
+  /** Pinned above the tabs — the score the signals explain. */
   header?: ReactNode;
-  /** Pinned to the bottom of the panel, below the scrolling list. */
+  /** Pinned to the bottom of the panel, below the list. */
   footer?: ReactNode;
 }) {
-  const shown = limit === undefined ? signals : signals.slice(0, limit);
+  const [chosen, setChosen] = useState<AlertSeverity | null>(null);
 
-  if (shown.length === 0) {
+  // Only severities actually present get a tab, so a filter that clears every
+  // critical finding does not leave an empty tab behind to click.
+  const tabs = SEVERITY_ORDER.filter((sev) => signals.some((s) => s.severity === sev)).map(
+    (sev) => ({
+      value: sev,
+      label: `${SEVERITY_WORD[sev]} ${signals.filter((s) => s.severity === sev).length}`,
+      title: `${signals.filter((s) => s.severity === sev).length} ${SEVERITY_WORD[sev].toLowerCase()} ${
+        signals.filter((s) => s.severity === sev).length === 1 ? 'signal' : 'signals'
+      }`,
+    }),
+  );
+
+  // Derived rather than stored: if the chosen severity vanishes on a filter
+  // change, the panel falls back to the worst one still present instead of
+  // rendering nothing.
+  const active = tabs.some((t) => t.value === chosen) ? chosen : (tabs[0]?.value ?? null);
+  const shown = signals.filter((s) => s.severity === active);
+
+  if (signals.length === 0) {
     return (
       <div className="signals">
         {header}
@@ -81,6 +102,16 @@ export function SignalPanel({
   return (
     <div className="signals">
       {header}
+      {tabs.length > 1 ? (
+        <div className="signals__tabs">
+          <Segmented
+            label="Signal severity"
+            value={active as AlertSeverity}
+            onChange={setChosen}
+            options={tabs}
+          />
+        </div>
+      ) : null}
       <ol className="signals__list">
         {shown.map((s) => (
           <li key={s.id} className={`signal signal--${s.severity}`}>
