@@ -4,6 +4,7 @@ import {
   Globe2,
   Package,
   Users,
+  Scale,
   Moon,
   Sun,
   Database,
@@ -16,7 +17,7 @@ import { DataNotesPanel } from './DataNotesPanel';
 import { isoDateLabel } from '@/utils/format';
 import './shell.css';
 
-export type PageId = 'executive' | 'products' | 'customers';
+export type PageId = 'executive' | 'products' | 'customers' | 'economics';
 
 /**
  * Page identity lives here rather than inside each page component so the title
@@ -53,9 +54,18 @@ export const PAGE_META: Record<
     icon: Users,
     hint: 'Value, concentration and risk',
   },
+  economics: {
+    index: 4,
+    nav: 'Economics',
+    title: 'Profitability & Growth Economics',
+    question:
+      'Is a low-margin product destroying value, or creating it through the basket and the customer?',
+    icon: Scale,
+    hint: 'Basket, customer and price context',
+  },
 };
 
-const NAV_ORDER: PageId[] = ['executive', 'products', 'customers'];
+const NAV_ORDER: PageId[] = ['executive', 'products', 'customers', 'economics'];
 
 export function AppShell({
   ds,

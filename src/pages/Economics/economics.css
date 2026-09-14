@@ -1,0 +1,325 @@
+/* -------------------------------------------------------------------------
+ * Page 4 — Profitability & Growth Economics.
+ * ---------------------------------------------------------------------- */
+
+/* ------------------------------------------------------------- 1 KPI band */
+
+.econ-kpis {
+  grid-area: kpis;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: var(--gap-card);
+}
+
+.ekpi {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-rule);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-1);
+  min-width: 0;
+}
+/* The one figure that is a finding rather than a measure gets the tint. */
+.ekpi--accent {
+  background: var(--c-accent-soft);
+  border-color: var(--c-accent-line);
+}
+
+.ekpi__head {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.ekpi__value {
+  font-size: var(--fs-display);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--c-ink);
+}
+.ekpi__foot {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px var(--sp-2);
+  margin-top: 1px;
+}
+.ekpi__note {
+  font-size: var(--fs-micro);
+  color: var(--c-muted);
+}
+
+/* ------------------------------------------------------ 2 matrix legend */
+
+.econ-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-rule-soft);
+}
+.econ-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  white-space: nowrap;
+}
+.econ-legend__item strong {
+  color: var(--c-ink);
+  font-weight: 700;
+}
+.econ-legend__dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+}
+.econ-legend__dot--pos { background: var(--c-pos); }
+.econ-legend__dot--accent { background: var(--c-accent); }
+.econ-legend__dot--warn { background: var(--c-warn); }
+.econ-legend__dot--neg { background: var(--c-neg); }
+
+/* ------------------------------------------------------------- 3 ladder */
+
+/*
+ * Three bars on one scale, with the portfolio benchmark marked on each. The
+ * comparison only works because the scale is shared, so the bars are never
+ * normalised to their own maximum.
+ */
+.ladder {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  gap: var(--sp-3);
+}
+.ladder__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+.ladder__row {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr) 54px;
+  align-items: center;
+  gap: 2px var(--sp-2);
+}
+.ladder__label {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-ink-2);
+}
+.ladder__track {
+  position: relative;
+  height: 14px;
+  border-radius: var(--r-xs);
+  background: var(--c-track);
+  overflow: hidden;
+}
+.ladder__fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--r-xs);
+  /* Scaled rather than resized: animating width relayouts the row on every
+     frame, and the bar is decoration for the number beside it. */
+  transform-origin: left center;
+  transition: transform var(--t-slow) var(--ease);
+}
+.ladder__fill--pos { background: var(--c-accent); }
+.ladder__fill--neg { background: var(--c-neg); }
+.ladder__bench {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 2px;
+  background: var(--c-ink);
+  opacity: 0.45;
+}
+.ladder__val {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  text-align: right;
+  color: var(--c-ink);
+}
+.ladder__note {
+  grid-column: 2 / span 2;
+  font-size: var(--fs-micro);
+  color: var(--c-faint);
+}
+
+.ladder__verdict {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-sm);
+}
+.ladder__verdict--pos { color: var(--c-pos); background: var(--c-pos-soft); }
+.ladder__verdict--accent { color: var(--c-accent); background: var(--c-accent-soft); }
+.ladder__verdict--warn { color: var(--c-warn); background: var(--c-warn-soft); }
+.ladder__verdict--neg { color: var(--c-neg); background: var(--c-neg-soft); }
+
+.ladder__facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-2) var(--sp-3);
+  margin-top: auto;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-rule-soft);
+}
+.ladder__facts dt {
+  font-size: var(--fs-micro);
+  color: var(--c-muted);
+}
+.ladder__facts dd {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--c-ink);
+}
+
+/* --------------------------------------------------------- 5 discount table */
+
+.dtable,
+.decide {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--fs-xs);
+}
+.dtable__head,
+.dtable__row {
+  display: grid;
+  grid-template-columns: minmax(74px, 1fr) 68px 62px 62px 68px 74px 104px;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 7px 0;
+}
+.dtable__head,
+.decide__head {
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--c-muted);
+  border-bottom: 1px solid var(--c-rule);
+}
+.dtable__row {
+  border-bottom: 1px solid var(--c-rule-soft);
+}
+.dtable__row:last-child {
+  border-bottom: none;
+}
+.dtable__band {
+  font-weight: 600;
+  color: var(--c-ink);
+}
+.dtable .n,
+.decide .n {
+  text-align: right;
+}
+
+/* ------------------------------------------------------- 7 decision table */
+
+.decide__head,
+.decide__row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(190px, 1.5fr) minmax(170px, 1.3fr) 82px 106px;
+  align-items: start;
+  gap: var(--sp-3);
+  padding: var(--sp-3) 0;
+}
+.decide__head {
+  align-items: center;
+  padding: 0 0 7px;
+}
+.decide__row {
+  border-bottom: 1px solid var(--c-rule-soft);
+}
+.decide__row:last-child {
+  border-bottom: none;
+}
+.decide__signal {
+  font-weight: 600;
+  color: var(--c-ink);
+  line-height: 1.4;
+}
+.decide__ctx,
+.decide__diag {
+  color: var(--c-muted);
+  line-height: 1.5;
+}
+.decide__scope {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+.decide__scope strong {
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  color: var(--c-ink);
+}
+.decide__scope span {
+  font-size: var(--fs-micro);
+  color: var(--c-faint);
+}
+
+/* ------------------------------------------------------------ responsive */
+
+@media (max-width: 1400px) {
+  .econ-kpis {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1100px) {
+  .decide__head {
+    display: none;
+  }
+  .decide__row {
+    grid-template-columns: minmax(0, 1fr) 96px;
+    gap: var(--sp-2);
+  }
+  .decide__ctx,
+  .decide__diag {
+    grid-column: 1 / span 2;
+  }
+  .decide__scope {
+    align-items: flex-start;
+    flex-direction: row;
+    gap: var(--sp-2);
+  }
+  .dtable__head {
+    display: none;
+  }
+  .dtable__row {
+    grid-template-columns: minmax(0, 1fr) 70px 62px 100px;
+    grid-template-areas: 'band rev basket verdict';
+    row-gap: 2px;
+  }
+  .dtable__row > :nth-child(3),
+  .dtable__row > :nth-child(5),
+  .dtable__row > :nth-child(6) {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .econ-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ladder__facts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .econ-kpis {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

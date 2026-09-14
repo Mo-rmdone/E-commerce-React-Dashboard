@@ -11,6 +11,7 @@ import { DetailPanel } from '@/components/drilldown/DetailPanel';
 import { ExecutiveOverview } from '@/pages/ExecutiveOverview/ExecutiveOverview';
 import { ProductIntelligence } from '@/pages/ProductIntelligence/ProductIntelligence';
 import { CustomerInsights } from '@/pages/CustomerInsights/CustomerInsights';
+import { Economics } from '@/pages/Economics/Economics';
 import type { Dataset } from '@/types';
 import './styles/global.css';
 import '@/components/charts/charts.css';
@@ -55,8 +56,10 @@ function Dashboard({ ds }: { ds: Dataset }) {
           <ExecutiveOverview ds={ds} onOpenDetail={drillthrough.open} />
         ) : page === 'products' ? (
           <ProductIntelligence ds={ds} onOpenDetail={drillthrough.open} />
-        ) : (
+        ) : page === 'customers' ? (
           <CustomerInsights ds={ds} onOpenDetail={drillthrough.open} />
+        ) : (
+          <Economics ds={ds} onOpenDetail={drillthrough.open} />
         )}
       </div>
 

@@ -1,0 +1,31 @@
+/* ------------------------------------------------------------ quadrant scatter */
+
+.qscatter {
+  width: 100%;
+}
+
+/* The thresholds are the analysis. Dashed so they read as a rule rather than
+   as data, but full height so the four populations are unmistakable. */
+.qscatter__split {
+  stroke: var(--c-reference);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  opacity: 0.55;
+}
+
+/* Corner labels rather than a legend: the name of a quadrant belongs in the
+   quadrant, where the marks it describes actually are. */
+.qscatter__quad {
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  fill: var(--c-faint);
+}
+
+.qscatter__dot {
+  transition:
+    opacity var(--t-fast) var(--ease),
+    r var(--t-fast) var(--ease);
+}

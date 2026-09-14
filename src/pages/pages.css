@@ -41,6 +41,25 @@
     'conc   conc';
 }
 
+/*
+ * Page 4 runs as an argument rather than a dashboard: the matrix that raises
+ * the question sits beside the ladder that answers it, then the two scatters
+ * that widen it to customers and price, then the wide tables.
+ *
+ * The discount and decision tables take the full width because they are wide
+ * tables — seven and five columns — and squeezing either into half a row
+ * pushed its last column out of the card.
+ */
+.grid--econ {
+  grid-template-columns: minmax(0, 1.5fr) minmax(360px, 1fr);
+  grid-template-areas:
+    'kpis   kpis'
+    'matrix ladder'
+    'cust   price'
+    'disc   disc'
+    'decide decide';
+}
+
 /* ---------------------------------------------------------- section */
 
 /*
@@ -386,6 +405,20 @@
   }
 }
 
+@media (max-width: 1100px) {
+  .grid--econ {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'kpis'
+      'matrix'
+      'ladder'
+      'cust'
+      'price'
+      'disc'
+      'decide';
+  }
+}
+
 @media (max-width: 640px) {
   .grid--kpi {
     grid-template-columns: minmax(0, 1fr);
@@ -425,6 +458,20 @@
  * entirely. Below 640px it keeps the icon and hides the word visually — the
  * word stays in the accessibility tree, so nothing is actually lost.
  */
+@media (max-width: 1100px) {
+  .grid--econ {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'kpis'
+      'matrix'
+      'ladder'
+      'cust'
+      'price'
+      'disc'
+      'decide';
+  }
+}
+
 @media (max-width: 640px) {
   .minitable td.n .chip > span:not(.sr-only) {
     position: absolute;
