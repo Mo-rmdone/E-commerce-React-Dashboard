@@ -27,7 +27,7 @@ import { pct, pctSigned, usd, usdShort } from '@/utils/format';
  * exaggerated.
  */
 
-export type TrajectoryMetric = 'revenue' | 'profit';
+export type TrajectoryMetric = 'revenue' | 'profit' | 'margin';
 
 const M = { top: 20, right: 52, bottom: 26, left: 54 };
 
@@ -49,6 +49,7 @@ export function TrajectoryChart({
   const w = size.width;
   const showRevenue = visible.has('revenue');
   const showProfit = visible.has('profit');
+  const showMargin = visible.has('margin');
 
   const geom = useMemo(() => {
     if (w < 120 || points.length === 0) return null;
@@ -87,6 +88,23 @@ export function TrajectoryChart({
             .y((v) => yProf(v))
             .curve(curveMonotoneX)(prof) ?? '')
         : '';
+
+    // Margin is a rate, not an amount — it rides its own scale (0 to a little
+    // above the peak) mapped to the plot height, drawn as a gray dotted line.
+    const marg = points.map((p) => p.measures.grossMargin ?? 0);
+    const hiMarg = max(marg) ?? 0.15;
+    // Scale so the margin line sits in the mid-band, clear of the profit line
+    // and its labels up top and the bars' bases below.
+    const yMargin = scaleLinear()
+      .domain([0, hiMarg <= 0 ? 0.15 : hiMarg * 2])
+      .range([ih, 0]);
+    const marginLine =
+      points.length > 1
+        ? (line<number>()
+            .x((_, i) => centre(i))
+            .y((v) => yMargin(v))
+            .curve(curveMonotoneX)(marg) ?? '')
+        : '';
     // Slimmer columns than before, capped so a filtered single period does not
     // become a slab.
     const barW = Math.min(band.bandwidth(), 34);
@@ -102,6 +120,9 @@ export function TrajectoryChart({
       prof,
       centre,
       profLine,
+      marg,
+      yMargin,
+      marginLine,
       revTicks: yRev.ticks(4),
       profTicks: yProf.ticks(4),
       xTicks: pickTicks(points, iw),
@@ -196,6 +217,7 @@ export function TrajectoryChart({
   // When hovering, the hovered column is the emphasis; otherwise the peaks are.
   const emphasized = (i: number) => (focus !== null ? focus === i : highlight.has(i));
   const labelProfitAll = points.length <= 6;
+  const labelMarginAll = points.length <= 6;
 
   return (
     <div ref={ref} style={{ width: '100%', minHeight: height }}>
@@ -316,6 +338,48 @@ export function TrajectoryChart({
                         fill={neg ? 'var(--c-neg)' : 'var(--c-cat-2)'}
                         stroke="var(--c-surface)"
                         strokeWidth={on ? 2 : 1.5}
+                      />
+                    </g>
+                  );
+                })
+              : null}
+
+            {/* Margin — a gray dotted line on its own scale. */}
+            {showMargin && geom.marginLine ? (
+              <path
+                d={geom.marginLine}
+                fill="none"
+                stroke="var(--c-reference)"
+                strokeWidth={1.75}
+                strokeDasharray="2 4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ) : null}
+            {showMargin
+              ? points.map((p, i) => {
+                  const cx = geom.centre(i);
+                  const cy = geom.yMargin(geom.marg[i]);
+                  return (
+                    <g key={`mg-${p.key}`}>
+                      {labelMarginAll ? (
+                        <text
+                          x={cx}
+                          y={cy + 15}
+                          textAnchor="middle"
+                          className="chart-value-label"
+                          fill="var(--c-reference)"
+                        >
+                          {pct(geom.marg[i])}
+                        </text>
+                      ) : null}
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={2.75}
+                        fill="var(--c-surface)"
+                        stroke="var(--c-reference)"
+                        strokeWidth={1.5}
                       />
                     </g>
                   );

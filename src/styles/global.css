@@ -167,6 +167,7 @@ svg {
   text-overflow: ellipsis;
 }
 
+
 .card__sub {
   font-size: var(--fs-xs);
   color: var(--c-muted);
@@ -180,6 +181,27 @@ svg {
   gap: var(--sp-2);
   flex: none;
 }
+
+/* Narrow cards: a question-shaped title has no useful prefix, so wrapping it
+   tells the reader more than an ellipsis does. And the toolbar wraps onto its
+   own lines rather than running out of the card — four filter tabs plus an
+   export button do not fit beside a title on a phone. */
+@media (max-width: 900px) {
+  .card__title,
+  .card__sub {
+    white-space: normal;
+    overflow: visible;
+  }
+  .card__tools {
+    flex-wrap: wrap;
+    width: 100%;
+    margin-left: 0;
+  }
+  .card__tools .seg {
+    flex-wrap: wrap;
+  }
+}
+
 
 .card__body {
   padding: var(--sp-4) var(--pad-card) var(--pad-card);
@@ -421,5 +443,69 @@ svg {
   .page-enter,
   .card-enter {
     animation: none;
+  }
+}
+
+/* ---------------------------------------------------- touch accommodation */
+
+/*
+ * Coarse pointer: fingers, not cursors. Every control the user actually taps is
+ * brought to the 44px minimum, and the ones that cannot grow without wrecking
+ * the layout around them — the sort affordances inside table headers — get an
+ * invisible 44px hit area centred on the icon instead, so the target grows
+ * while the header keeps its height.
+ *
+ * Applied app-wide rather than per page: these are shared controls, and a rule
+ * that only covered one page left the nav rail and the filter menus at 28px.
+ */
+@media (pointer: coarse) {
+  .btn,
+  .seg__btn,
+  .ms__btn,
+  .rail__link,
+  .rail__util,
+  .legend-toggle__btn,
+  .dt__search input,
+  .lb__search input,
+  .crumbs__item {
+    min-height: 44px;
+  }
+
+  .btn,
+  .seg__btn,
+  .ms__btn,
+  .legend-toggle__btn {
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Icon-only controls need the width too, not just the height. */
+  .btn--icon,
+  .rail__link,
+  .rail__util {
+    min-width: 44px;
+    justify-content: center;
+  }
+
+  /*
+   * Hit area without layout cost. The button keeps its drawn size; the
+   * pseudo-element extends what a finger can land on.
+   */
+  .dt__sort,
+  .heat__sort,
+  .infodot {
+    position: relative;
+  }
+  .dt__sort::after,
+  .heat__sort::after,
+  .infodot::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    min-width: 44px;
+    height: 44px;
   }
 }

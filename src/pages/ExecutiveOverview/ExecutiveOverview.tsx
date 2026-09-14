@@ -11,7 +11,8 @@ import { KpiCard } from '@/components/cards/KpiCard';
 import { Card, EmptyState, Segmented, StatusChip } from '@/components/primitives';
 import { InfoDot } from '@/components/tooltips/Tooltip';
 import { WorldMap, MAP_METRIC_LABEL, type MapMetric } from '@/components/charts/WorldMap';
-import { TrajectoryChart, type TrajectoryMetric } from '@/components/charts/TrajectoryChart';
+import { type TrajectoryMetric } from '@/components/charts/TrajectoryChart';
+import { AreaTrajectory } from '@/components/charts/AreaTrajectory';
 import { SegmentDonut } from '@/components/charts/SegmentDonut';
 import { ThresholdBars, type ThresholdBarDatum } from '@/components/charts/ThresholdBars';
 import { categorical } from '@/config/theme';
@@ -299,9 +300,10 @@ export function ExecutiveOverview({
               <div className="legend-toggle" role="group" aria-label="Series shown">
                 {(
                   [
-                    ['revenue', 'Revenue', 'var(--c-accent)', 'bar'],
+                    ['revenue', 'Revenue', 'var(--c-accent)', 'line'],
                     ['profit', 'Profit', 'var(--c-cat-2)', 'line'],
-                  ] as [TrajectoryMetric, string, string, 'bar' | 'line'][]
+                    ['margin', 'Margin', 'var(--c-reference)', 'dash'],
+                  ] as [TrajectoryMetric, string, string, 'bar' | 'line' | 'dash'][]
                 ).map(([key, label, color, shape]) => (
                   <button
                     key={key}
@@ -322,9 +324,13 @@ export function ExecutiveOverview({
                         chart does: bars for amounts, a line for the rate. */}
                     <span
                       className={`chart-legend__swatch${
-                        shape === 'line' ? ' chart-legend__swatch--line' : ''
+                        shape === 'line'
+                          ? ' chart-legend__swatch--line'
+                          : shape === 'dash'
+                            ? ' chart-legend__swatch--dash'
+                            : ''
                       }`}
-                      style={{ background: color }}
+                      style={shape === 'dash' ? undefined : { background: color }}
                       aria-hidden
                     />
                     {label}
@@ -343,7 +349,7 @@ export function ExecutiveOverview({
             </>
           }
         >
-          <TrajectoryChart points={series} basis={basis} visible={trajectory} height={206} />
+          <AreaTrajectory points={series} basis={basis} visible={trajectory} height={244} />
           <TrajectoryNarrative series={series} />
         </Card>
 

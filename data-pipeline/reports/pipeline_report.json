@@ -1,0 +1,767 @@
+{
+  "generatedAt": "2026-09-07T07:45:41Z",
+  "source": "Global skincare and Beauty e-store_E-commerce Analysis_English.xlsx",
+  "sheets": [
+    "data",
+    "dictionary"
+  ],
+  "rowsRead": 51290,
+  "rowsKept": 51288,
+  "corrections": [
+    {
+      "id": "DQ-06",
+      "label": "Discount float noise collapsed",
+      "detail": "Floating-point noise stored 0.15 as two distinct values (0.15 and 0.15000000000000002), splitting one discount level into two in every slicer. Values are rounded to 4dp, which removes the noise without disturbing any real rate.",
+      "rows": 0
+    },
+    {
+      "id": "DQ-06b",
+      "label": "Anomalous discount levels flagged, not altered",
+      "detail": "Four levels (0.2%, 20.2%, 40.2%, 60.2%) look like a clean rate plus 0.002 and appear only on the 10% margin tier. They are left exactly as supplied — rewriting them would break the Profit reconstruction — and surfaced as a data note.",
+      "rows": 629
+    },
+    {
+      "id": "DQ-04",
+      "label": "US customer IDs de-duplicated",
+      "detail": "US customer numbers carry a 9th digit encoding the US sub-region rather than the customer, inflating the US customer count roughly 3.2x. The trailing digit is stripped so one shopper is one customer.",
+      "rows": 9992
+    },
+    {
+      "id": "DQ-08",
+      "label": "Sudan region reassigned",
+      "detail": "Sudan appeared under both North Africa and Eastern Africa. The outlying rows were folded into North Africa, its dominant region.",
+      "rows": 2
+    },
+    {
+      "id": "DQ-07",
+      "label": "Exact duplicate rows removed",
+      "detail": "Order lines that were byte-for-byte duplicates of an existing line would have double-counted their sales and profit.",
+      "rows": 2
+    },
+    {
+      "id": "DQ-12",
+      "label": "Product name casing folded",
+      "detail": "\"REN Clean Skincare Moroccan Rose Otto Bath Oil\" also appeared as \"Ren …\", counting one product as two.",
+      "rows": 1
+    }
+  ],
+  "limitations": [
+    {
+      "id": "no-cost",
+      "label": "No cost or COGS field exists",
+      "detail": "Profit is supplied directly and resolves exactly to Sales x (BaseMargin - Discount) on every row, where BaseMargin is one of four tiers assigned per order line. Discount is the only lever on margin, and no cost-driven metric is offered."
+    },
+    {
+      "id": "line-level-margin",
+      "label": "Base margin is an order-line attribute",
+      "detail": "Eight of the seventeen subcategories price at a single margin tier; the rest mix two, with no dimension explaining the split. Breakeven discount is exact per line; a subcategory-level breakeven is a revenue-weighted average and is labelled as such."
+    },
+    {
+      "id": "no-sku",
+      "label": "No SKU level exists",
+      "detail": "The workbook stops at Product, so the hierarchy drills Category -> Subcategory -> Product with no SKU tier."
+    },
+    {
+      "id": "line-level-category",
+      "label": "Category is an order-line attribute",
+      "detail": "Some products are recorded across multiple subcategories, so a product has no single category. Category and Subcategory are aggregated from order lines rather than attached to the product."
+    },
+    {
+      "id": "no-sub-segment",
+      "label": "No sub-segment field exists",
+      "detail": "Segment has exactly 3 values and no child column, so the segment drill descends Segment -> Market -> Country -> Customer instead."
+    },
+    {
+      "id": "gross-sales",
+      "label": "Sales is a gross, pre-discount figure",
+      "detail": "Sales equals Quantity x unit price, with the discount applied to Profit only. Every KPI states the revenue basis it uses."
+    },
+    {
+      "id": "weekday",
+      "label": "Weekday analysis is not offered",
+      "detail": "Order dates were synthesised and the weekday distribution is degenerate, so year/quarter/month are used and day-of-week is not."
+    }
+  ],
+  "fieldNotes": {
+    "Row ID": "Unique ID of the row",
+    "Order ID": "ID of the order (one order can have multiple items)",
+    "Order Date": "Date when order was made",
+    "Customer ID": "ID of the customer (one customer can make multiple orders)",
+    "Segment": "Customer segment",
+    "City": "Order city",
+    "State": "Order state (where applicable)",
+    "Country": "Order country",
+    "Country latitude": "Geographic coordinates of the order country",
+    "Country longitude": "Geographic coordinates of the order country",
+    "Region": "Region to which the order belongs to",
+    "Market": "Market to which the order belongs to",
+    "Subcategory": "Product subcategory",
+    "Category": "Product category",
+    "Product": "Product name",
+    "Quantity": "Number of products purchased per order",
+    "Sales": "Total sales in $",
+    "Discount": "Discount applied to the order",
+    "Profit": "Total profit for each order after discount"
+  },
+  "etl": [
+    {
+      "layer": "Bronze",
+      "title": "Land the raw workbook",
+      "detail": "Read the `data` sheet verbatim and persist it as parquet — an immutable snapshot every later stage is reproducible from.",
+      "rows_in": 51290,
+      "rows_out": 51290,
+      "output": "data/bronze/orders_raw.parquet"
+    },
+    {
+      "layer": "Silver",
+      "title": "Clean & conform",
+      "detail": "Coerce types, drop unparseable rows, round discount noise to 4dp, de-duplicate byte-identical lines, canonicalise US customer IDs, reassign Sudan's region and fold the product casing. Profit is left untouched so the margin formula still holds.",
+      "rows_in": 51290,
+      "rows_out": 51288,
+      "output": "data/silver/orders_clean.parquet"
+    },
+    {
+      "layer": "Gold",
+      "title": "Star schema",
+      "detail": "Build conformed dimensions with surrogate keys and a one-line-grain fact; emit the flat clean table the dashboard is built from.",
+      "rows_in": 51288,
+      "rows_out": 51288,
+      "output": "data/gold/*.parquet + app_rows.json"
+    }
+  ],
+  "dataModel": {
+    "grain": "one order line",
+    "fact": {
+      "name": "fact_sales",
+      "grain": "order line",
+      "measures": [
+        "quantity",
+        "sales",
+        "discount",
+        "base_margin",
+        "profit"
+      ],
+      "degenerate": [
+        "order_id"
+      ],
+      "columns": [
+        "sales_key",
+        "date_key",
+        "customer_key",
+        "segment_key",
+        "product_key",
+        "subcategory_key",
+        "geography_key",
+        "order_id",
+        "quantity",
+        "sales",
+        "discount",
+        "base_margin",
+        "profit"
+      ],
+      "rows": 51288
+    },
+    "dimensions": [
+      {
+        "name": "dim_date",
+        "grain": "day",
+        "columns": [
+          "date_key",
+          "order_date",
+          "year",
+          "quarter",
+          "month",
+          "month_name",
+          "day"
+        ],
+        "rows": 1430
+      },
+      {
+        "name": "dim_customer",
+        "grain": "customer",
+        "columns": [
+          "customer_key",
+          "customer_id"
+        ],
+        "rows": 15707
+      },
+      {
+        "name": "dim_segment",
+        "grain": "segment",
+        "columns": [
+          "segment_key",
+          "segment"
+        ],
+        "rows": 3
+      },
+      {
+        "name": "dim_product",
+        "grain": "product",
+        "columns": [
+          "product_key",
+          "product",
+          "unit_price"
+        ],
+        "rows": 3576
+      },
+      {
+        "name": "dim_subcategory",
+        "grain": "subcategory",
+        "columns": [
+          "subcategory_key",
+          "subcategory",
+          "category"
+        ],
+        "rows": 17,
+        "note": "carries Category (Subcategory -> Category hierarchy)"
+      },
+      {
+        "name": "dim_category",
+        "grain": "category",
+        "columns": [
+          "category_key",
+          "category"
+        ],
+        "rows": 5
+      },
+      {
+        "name": "dim_geography",
+        "grain": "city / state / country",
+        "columns": [
+          "geography_key",
+          "city",
+          "state",
+          "country",
+          "region",
+          "market",
+          "latitude",
+          "longitude"
+        ],
+        "rows": 3828
+      }
+    ],
+    "relationships": [
+      {
+        "from": "fact_sales.date_key",
+        "to": "dim_date.date_key"
+      },
+      {
+        "from": "fact_sales.customer_key",
+        "to": "dim_customer.customer_key"
+      },
+      {
+        "from": "fact_sales.segment_key",
+        "to": "dim_segment.segment_key"
+      },
+      {
+        "from": "fact_sales.product_key",
+        "to": "dim_product.product_key"
+      },
+      {
+        "from": "fact_sales.subcategory_key",
+        "to": "dim_subcategory.subcategory_key"
+      },
+      {
+        "from": "fact_sales.geography_key",
+        "to": "dim_geography.geography_key"
+      },
+      {
+        "from": "dim_subcategory.category",
+        "to": "dim_category.category"
+      }
+    ]
+  },
+  "quality": {
+    "passed": true,
+    "checks": [
+      {
+        "name": "Totals reconcile Silver -> Gold",
+        "passed": true,
+        "detail": "Sales $6,517,641, Profit $1,065,426 carry through unchanged."
+      },
+      {
+        "name": "Profit = Sales x (BaseMargin - Discount)",
+        "passed": true,
+        "detail": "Exact on all 51,288 rows (max residual $0.0000); base-margin tiers 10%, 15%, 40%, 50%."
+      },
+      {
+        "name": "Dates match Order-ID serial + 2,922 days",
+        "passed": true,
+        "detail": "51,288/51,288 rows align — an independent confirmation the Excel-serial conversion is timezone-safe."
+      },
+      {
+        "name": "Referential integrity (fact -> dimensions)",
+        "passed": true,
+        "detail": "All 51,288 fact rows resolve on all 6 dimension keys; 0 orphans."
+      },
+      {
+        "name": "Dimension surrogate keys are unique",
+        "passed": true,
+        "detail": "No duplicate keys across the 6 dimensions."
+      }
+    ],
+    "totals": {
+      "bronze_rows": 51290,
+      "gold_rows": 51288,
+      "sales_total": 6517641.0,
+      "profit_total": 1065425.65,
+      "base_margin_tiers": [
+        0.1,
+        0.15,
+        0.4,
+        0.5
+      ]
+    }
+  },
+  "profiling": {
+    "summary": {
+      "sales": {
+        "count": 51288,
+        "mean": 127.08,
+        "std": 236.08,
+        "min": 2.0,
+        "p25": 25.0,
+        "median": 56.0,
+        "p75": 132.0,
+        "max": 3940.0
+      },
+      "profit": {
+        "count": 51288,
+        "mean": 20.77,
+        "std": 83.58,
+        "min": -1746.0,
+        "p25": 0.0,
+        "median": 7.2,
+        "p75": 25.0,
+        "max": 1820.0
+      },
+      "discount": {
+        "count": 51288,
+        "mean": 0.14,
+        "std": 0.21,
+        "min": 0.0,
+        "p25": 0.0,
+        "median": 0.0,
+        "p75": 0.2,
+        "max": 0.85
+      },
+      "quantity": {
+        "count": 51288,
+        "mean": 5.42,
+        "std": 4.91,
+        "min": 1.0,
+        "p25": 2.0,
+        "median": 4.0,
+        "p75": 7.0,
+        "max": 20.0
+      },
+      "base_margin": {
+        "count": 51288,
+        "mean": 0.31,
+        "std": 0.18,
+        "min": 0.1,
+        "p25": 0.1,
+        "median": 0.4,
+        "p75": 0.5,
+        "max": 0.5
+      }
+    },
+    "histograms": [
+      {
+        "id": "sales",
+        "title": "Sales per order line",
+        "kind": "hist",
+        "unit": "$",
+        "edges": [
+          2,
+          133,
+          265,
+          396,
+          527,
+          658,
+          790,
+          921,
+          1052,
+          1183,
+          1315,
+          1446,
+          1577,
+          1708,
+          1840,
+          1971,
+          2102,
+          2234,
+          2365,
+          2496,
+          2627,
+          2759,
+          2890,
+          3021,
+          3152,
+          3284,
+          3415,
+          3546,
+          3677,
+          3809,
+          3940
+        ],
+        "counts": [
+          38667,
+          6780,
+          2550,
+          1193,
+          762,
+          451,
+          204,
+          133,
+          88,
+          57,
+          62,
+          45,
+          50,
+          45,
+          29,
+          27,
+          21,
+          18,
+          22,
+          21,
+          8,
+          11,
+          4,
+          8,
+          12,
+          3,
+          2,
+          7,
+          4,
+          4
+        ]
+      },
+      {
+        "id": "profit",
+        "title": "Profit per order line",
+        "kind": "hist",
+        "unit": "$",
+        "diverging": true,
+        "edges": [
+          -1746,
+          -1627,
+          -1508,
+          -1389,
+          -1271,
+          -1152,
+          -1033,
+          -914,
+          -795,
+          -676,
+          -557,
+          -438,
+          -320,
+          -201,
+          -82,
+          37,
+          156,
+          275,
+          394,
+          512,
+          631,
+          750,
+          869,
+          988,
+          1107,
+          1226,
+          1345,
+          1463,
+          1582,
+          1701,
+          1820
+        ],
+        "counts": [
+          1,
+          3,
+          2,
+          2,
+          3,
+          3,
+          3,
+          3,
+          5,
+          13,
+          24,
+          44,
+          130,
+          693,
+          41056,
+          7601,
+          1069,
+          336,
+          102,
+          63,
+          45,
+          24,
+          13,
+          19,
+          7,
+          9,
+          4,
+          4,
+          3,
+          4
+        ]
+      },
+      {
+        "id": "discount",
+        "title": "Discount levels",
+        "kind": "bar",
+        "unit": "%",
+        "labels": [
+          "0",
+          "0.2",
+          "7",
+          "10",
+          "15",
+          "17",
+          "20",
+          "20.2",
+          "25",
+          "27",
+          "30",
+          "32",
+          "35",
+          "37",
+          "40",
+          "40.2",
+          "45",
+          "47",
+          "50",
+          "55",
+          "57",
+          "60",
+          "60.2",
+          "65",
+          "70",
+          "80",
+          "85"
+        ],
+        "counts": [
+          29009,
+          461,
+          150,
+          4068,
+          541,
+          735,
+          4998,
+          41,
+          198,
+          388,
+          340,
+          27,
+          122,
+          74,
+          3176,
+          104,
+          327,
+          725,
+          1633,
+          10,
+          12,
+          2006,
+          23,
+          17,
+          1786,
+          315,
+          2
+        ]
+      },
+      {
+        "id": "base_margin",
+        "title": "Base-margin tiers",
+        "kind": "bar",
+        "unit": "%",
+        "labels": [
+          "10",
+          "15",
+          "40",
+          "50"
+        ],
+        "counts": [
+          14523,
+          8203,
+          9770,
+          18792
+        ]
+      },
+      {
+        "id": "quantity",
+        "title": "Quantity per line",
+        "kind": "bar",
+        "unit": "",
+        "labels": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "11",
+          "12",
+          "13",
+          "14",
+          "15",
+          "16",
+          "17",
+          "18",
+          "19",
+          "20"
+        ],
+        "counts": [
+          7656,
+          9653,
+          8166,
+          6392,
+          3431,
+          2322,
+          1946,
+          1465,
+          1286,
+          948,
+          880,
+          854,
+          810,
+          875,
+          759,
+          773,
+          766,
+          789,
+          765,
+          752
+        ]
+      },
+      {
+        "id": "sales_by_year",
+        "title": "Sales by year",
+        "kind": "bar",
+        "unit": "$",
+        "labels": [
+          "2020",
+          "2021",
+          "2022",
+          "2023"
+        ],
+        "counts": [
+          1148361,
+          1405876,
+          1770778,
+          2192626
+        ]
+      },
+      {
+        "id": "lines_per_customer",
+        "title": "Order lines per customer",
+        "kind": "hist",
+        "unit": "",
+        "edges": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36,
+          37,
+          38
+        ],
+        "counts": [
+          5545,
+          3342,
+          2165,
+          1384,
+          907,
+          650,
+          425,
+          267,
+          215,
+          180,
+          112,
+          84,
+          80,
+          70,
+          51,
+          31,
+          33,
+          26,
+          27,
+          26,
+          17,
+          16,
+          9,
+          11,
+          5,
+          5,
+          2,
+          5,
+          5,
+          1,
+          3,
+          4,
+          0,
+          3,
+          0,
+          0,
+          1
+        ]
+      }
+    ],
+    "figures": [
+      "base_margin_tiers.png",
+      "discount_levels.png",
+      "lines_per_customer.png",
+      "profit_distribution.png",
+      "quantity_per_line.png",
+      "sales_by_year.png",
+      "sales_distribution.png"
+    ]
+  },
+  "lineage": [
+    "Excel workbook",
+    "Bronze (raw parquet)",
+    "Silver (cleaned parquet)",
+    "Gold (star schema)",
+    "app_rows.json",
+    "dashboard dataset.json"
+  ]
+}

@@ -55,9 +55,93 @@ export interface DatasetMeta {
   baseMarginFormulaExact: boolean;
 }
 
+// ------------------------------------------------ Medallion pipeline record
+
+export interface EtlStep {
+  layer: string;
+  title: string;
+  detail: string;
+  rows_in: number;
+  rows_out: number;
+  output: string;
+}
+
+export interface DataModelTable {
+  name: string;
+  grain: string;
+  columns: string[];
+  rows: number;
+  note?: string;
+  measures?: string[];
+  degenerate?: string[];
+}
+
+export interface DataModel {
+  grain: string;
+  fact: DataModelTable;
+  dimensions: DataModelTable[];
+  relationships: { from: string; to: string }[];
+}
+
+export interface Histogram {
+  id: string;
+  title: string;
+  kind: 'hist' | 'bar';
+  unit: string;
+  diverging?: boolean;
+  edges?: number[];
+  labels?: string[];
+  counts: number[];
+}
+
+export interface ProfilingStat {
+  count: number;
+  mean: number;
+  std: number;
+  min: number;
+  p25: number;
+  median: number;
+  p75: number;
+  max: number;
+}
+
+export interface Profiling {
+  summary: Record<string, ProfilingStat>;
+  histograms: Histogram[];
+  figures: string[];
+}
+
+export interface ReconciliationCheck {
+  name: string;
+  passed: boolean;
+  detail: string;
+}
+
+export interface Reconciliation {
+  passed: boolean;
+  checks: ReconciliationCheck[];
+  totals: {
+    bronze_rows: number;
+    gold_rows: number;
+    sales_total: number;
+    profit_total: number;
+    base_margin_tiers: number[];
+  };
+}
+
+export interface PipelineReport {
+  generatedAt: string;
+  etl: EtlStep[];
+  dataModel: DataModel;
+  profiling: Profiling;
+  reconciliation: Reconciliation;
+  lineage: string[];
+}
+
 export interface RawDataset {
   meta: DatasetMeta;
   quality: DatasetQuality;
+  pipeline?: PipelineReport;
   dims: {
     dates: string[];
     customers: string[];
@@ -128,6 +212,7 @@ export interface Dimensions {
 export interface Dataset {
   meta: DatasetMeta;
   quality: DatasetQuality;
+  pipeline?: PipelineReport;
   dims: Dimensions;
   facts: FactColumns;
   rowCount: number;

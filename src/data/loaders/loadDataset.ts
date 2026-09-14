@@ -129,5 +129,5 @@ function hydrate(raw: RawDataset): Dataset {
     months: monthKeys,
   };
 
-  return { meta: raw.meta, quality: raw.quality, dims, facts, rowCount: n };
+  return { meta: raw.meta, quality: raw.quality, pipeline: raw.pipeline, dims, facts, rowCount: n };
 }

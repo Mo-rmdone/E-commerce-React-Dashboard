@@ -1,0 +1,239 @@
+/* -------------------------------------------------------------------------
+ * Page 3 — Commercial Performance & Value Drivers.
+ *
+ * The page reads in pairs, so the rule that matters most here is that both
+ * cards in a row end at the same line. The grid stretches them to equal height;
+ * everything below tells each card's *content* to fill that height, because a
+ * stretched card whose content does not grow just moves the white space inside
+ * instead of removing it.
+ * ---------------------------------------------------------------------- */
+
+/* --------------------------------------------------- health inside signals */
+
+/*
+ * The composite lives at the head of the signals panel now, so it must stop
+ * being a card: a bordered, raised block inside another card reads as a panel
+ * that escaped its own screen. It keeps the dial and the four target bars and
+ * gives up the chrome, separated from the findings by a single rule.
+ */
+/*
+ * The dial is a fixed 108px disc and the verdict beside it is two short lines,
+ * which left a wide empty band to its right. The four target bars move into it,
+ * so the composite and the components it is made of read as one block.
+ *
+ * The block also stops being a card here — a bordered, raised panel inside
+ * another card reads as one that escaped its own screen.
+ */
+.signals .health {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'header header'
+    'main   parts';
+  align-items: center;
+  column-gap: var(--sp-5);
+  row-gap: var(--sp-2);
+  flex: none;
+  padding: 0 0 var(--sp-3);
+  border: none;
+  border-bottom: 1px solid var(--c-rule);
+  border-radius: 0;
+  background: none;
+}
+.signals .health__header { grid-area: header; }
+.signals .health__main { grid-area: main; }
+.signals .health__parts {
+  grid-area: parts;
+  margin-top: 0;
+  gap: 5px;
+}
+.signals .health__parts li {
+  grid-template-columns: 62px minmax(0, 1fr) 34px;
+}
+.signals .health__note {
+  display: none;
+}
+
+/* Stacked narrow, the bars go back under the dial rather than beside it. */
+@media (max-width: 520px) {
+  .signals .health {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'header'
+      'main'
+      'parts';
+  }
+}
+
+/* --------------------------------------------------------------- matrix */
+
+.matlegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2) var(--sp-4);
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--c-rule-soft);
+}
+.matlegend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--fs-xs);
+  color: var(--c-muted);
+  white-space: nowrap;
+}
+.matlegend__swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex: none;
+}
+.matlegend__swatch--pos { background: var(--c-pos); }
+.matlegend__swatch--warn { background: var(--c-warn); }
+.matlegend__swatch--neg { background: var(--c-neg); }
+
+/* ------------------------------------------------------------- exposure */
+
+.exposure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+.exposure__bands {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--sp-2);
+}
+.exposure__band {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--c-surface-2);
+  border-radius: var(--r-sm);
+  /* Requested: these read as KPI tiles, and the accent edge is what marks them
+     as one family against the chart below. */
+  border-left: 2px solid var(--c-accent);
+  min-width: 0;
+}
+.exposure__value {
+  font-size: var(--fs-xl);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+  color: var(--c-ink);
+}
+.exposure__note {
+  font-size: var(--fs-micro);
+  color: var(--c-faint);
+}
+.exposure__read {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--c-muted);
+}
+.exposure__read svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--c-faint);
+}
+.exposure__read strong {
+  color: var(--c-ink);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------- table extras */
+
+/* Market carries its country beneath it, so the column answers "where" at two
+   grains without spending a second column on it. */
+.cust__sub {
+  display: block;
+  font-size: var(--fs-micro);
+  color: var(--c-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cust__action {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-ink-2);
+  white-space: nowrap;
+}
+
+/*
+ * The signals panel sets the row height, and it is a predictable one: a fixed
+ * score block, a 300px floor for the findings, and three decisions. The ten
+ * rows share what is left rather than ending 150px short of the card — which
+ * works out around 60px a row, not the 100px it reached when the findings list
+ * was free to grow.
+ *
+ * Gated on the row count: a filter leaving two rows would pull those two down
+ * the whole card, which looks broken rather than balanced.
+ */
+.card--fill-table .dt__table {
+  height: 100%;
+}
+
+@media (max-width: 1100px) {
+  .card--fill-table .dt__table {
+    height: auto;
+  }
+}
+
+/* ------------------------------------------------------------ responsive */
+
+/*
+ * Stacked, there is no neighbour to match, so the findings list stops scrolling
+ * inside a fixed box and simply runs to its full height.
+ */
+@media (max-width: 1100px) {
+  .signals__list {
+    flex: none;
+    overflow-y: visible;
+  }
+}
+
+/*
+ * Touch. Rows, chips and cells become real targets rather than pointer-sized
+ * ones. Nothing on this page depends on hover to be usable — the tooltips
+ * repeat what the cell already prints — so no hover-only affordance is lost.
+ */
+@media (pointer: coarse) {
+  .signal__action,
+  .heat__rowbtn,
+  .heat__colbtn {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .dt__table td {
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+  .heat__cellbtn {
+    min-height: 44px;
+  }
+}
+
+/* Phone. The nine-column watchlist cannot be squeezed into 390px, so it keeps
+   its columns and scrolls sideways inside its own card — the page itself never
+   scrolls horizontally. */
+@media (max-width: 640px) {
+  .exposure__bands {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .exposure__band:last-child {
+    grid-column: span 2;
+  }
+  .cust__action,
+  .cust__sub {
+    font-size: 10px;
+  }
+}

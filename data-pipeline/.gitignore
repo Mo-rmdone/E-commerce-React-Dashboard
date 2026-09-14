@@ -1,0 +1,4 @@
+# Regeneratable data layers (run `python run_pipeline.py` to rebuild).
+data/
+__pycache__/
+*.pyc

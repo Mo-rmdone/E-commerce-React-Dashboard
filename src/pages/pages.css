@@ -25,11 +25,20 @@
     'rank heat';
 }
 
+/*
+ * Page 3 reads in pairs. Every row holds two cards of equal height — the grid
+ * stretches them, and each card's content is told to fill, so a pair never
+ * shows one card floating above white space beside a taller neighbour.
+ *
+ * The right column has a floor rather than a pure fraction: the profitability
+ * matrix stops being readable below it, so the pair stacks instead of squeezing.
+ */
 .grid--cust {
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.25fr) minmax(430px, 1fr);
   grid-template-areas:
-    'table  alerts'
-    'trend  alerts';
+    'watch  signals'
+    'flow   matrix'
+    'conc   conc';
 }
 
 /* ---------------------------------------------------------- section */
@@ -330,7 +339,7 @@
     grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
   }
   .grid--cust {
-    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1.15fr) minmax(400px, 1fr);
   }
 }
 
@@ -357,16 +366,23 @@
       'rank'
       'heat';
   }
-  .grid--cust {
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-areas:
-      'table'
-      'trend'
-      'alerts';
-  }
   .page {
     padding-left: var(--sp-4);
     padding-right: var(--sp-4);
+  }
+}
+
+/* Customers stacks before the other pages do: two of its four cards carry a
+   fixed-width grid and a nine-column table, which give up sooner than a map. */
+@media (max-width: 1100px) {
+  .grid--cust {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'signals'
+      'watch'
+      'flow'
+      'matrix'
+      'conc';
   }
 }
 
@@ -401,4 +417,25 @@
 /* The chip is inline-flex, so centring the cell text centres the chip too. */
 .minitable td.n .chip {
   display: inline-flex;
+}
+
+/*
+ * The segment table's status column is a fixed 45px and the chip inside it is
+ * 78px of un-wrappable text, so on a narrow card the chip escaped the card
+ * entirely. Below 640px it keeps the icon and hides the word visually — the
+ * word stays in the accessibility tree, so nothing is actually lost.
+ */
+@media (max-width: 640px) {
+  .minitable td.n .chip > span:not(.sr-only) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .minitable td.n .chip {
+    padding: 3px 5px;
+  }
 }

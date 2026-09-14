@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { SlidersHorizontal, TriangleAlert } from 'lucide-react';
+import { Download, SlidersHorizontal, TriangleAlert } from 'lucide-react';
 import type { Breakdown, Dataset } from '@/types';
 import { BUSINESS_TARGETS } from '@/config/targets';
 import { useDashboardData, useBreakdown } from '@/hooks/useDashboardData';
@@ -21,6 +21,7 @@ import { LeaderboardTable, type LeaderRow } from '@/components/tables/Leaderboar
 import { Heatmap, type HeatmapAxis, type HeatmapCell } from '@/components/charts/Heatmap';
 import { categorical } from '@/config/theme';
 import { int, pct, pctSigned, usd, usdShort } from '@/utils/format';
+import { downloadCsv, type CsvColumn } from '@/utils/csv';
 import '../pages.css';
 
 type RankMode = 'top' | 'under';
@@ -154,6 +155,23 @@ export function ProductIntelligence({
 
   const tiers = useMemo(() => buildMarginTiers(ds, data.rows), [ds, data.rows]);
   const impact = useMemo(() => buildDiscountImpact(ds, data.rows), [ds, data.rows]);
+
+  // Every country x category cell with any activity, not just the ten
+  // countries currently visible on the page — the pager narrows the view, not
+  // the export.
+  const exportProfitMatrix = () => {
+    const cols: CsvColumn<ProfitMatrixRow>[] = [
+      { header: 'Country', value: (r) => r.country },
+      { header: 'Category', value: (r) => r.category },
+      { header: 'Sales (USD)', value: (r) => Math.round(r.sales) },
+      { header: 'Profit (USD)', value: (r) => Math.round(r.profit) },
+      { header: 'Margin', value: (r) => (r.margin === null ? '' : (r.margin * 100).toFixed(1)) },
+      { header: 'Order lines', value: (r) => r.lines },
+    ];
+    const ranked = [...matrix.flat].sort((a, b) => b.profit - a.profit);
+    const stamp = new Date().toISOString().slice(0, 10);
+    downloadCsv(`profit_by_country_category_${stamp}`, ranked, cols);
+  };
 
   if (data.isEmpty) {
     return (
@@ -301,15 +319,27 @@ export function ProductIntelligence({
             </InfoDot>
           }
           tools={
-            <Segmented
-              label="Country ranking"
-              value={countryMode}
-              onChange={(m) => setCountryMode(m)}
-              options={[
-                { value: 'top', label: 'Top 10' },
-                { value: 'bottom', label: 'Bottom 10' },
-              ]}
-            />
+            <>
+              <Segmented
+                label="Country ranking"
+                value={countryMode}
+                onChange={(m) => setCountryMode(m)}
+                options={[
+                  { value: 'top', label: 'Top 10' },
+                  { value: 'bottom', label: 'Bottom 10' },
+                ]}
+              />
+              <button
+                type="button"
+                className="btn"
+                onClick={exportProfitMatrix}
+                disabled={matrix.flat.length === 0}
+                title="Download every country x category cell in the current filter as a CSV"
+              >
+                <Download size={13} />
+                Export all
+              </button>
+            </>
           }
         >
           <Heatmap
@@ -345,6 +375,15 @@ function initialsOf(name: string): string {
 }
 
 
+export interface ProfitMatrixRow {
+  country: string;
+  category: string;
+  sales: number;
+  profit: number;
+  margin: number | null;
+  lines: number;
+}
+
 /**
  * Top countries by absolute profit contribution against every category.
  * Limited to what fits a readable matrix — 164 countries would be a wall.
@@ -354,7 +393,7 @@ function buildProfitMatrix(
   rows: Int32Array,
   countries: Breakdown[],
   categories: Breakdown[],
-): { rows: HeatmapAxis[]; cols: HeatmapAxis[]; cells: HeatmapCell[] } {
+): { rows: HeatmapAxis[]; cols: HeatmapAxis[]; cells: HeatmapCell[]; flat: ProfitMatrixRow[] } {
   // Every trading country, ranked by total profit. Paging happens in the page;
   // the whole matrix is built once so the colour scale is stable across pages.
   const ranked = [...countries].sort((a, b) => b.current.profit - a.current.profit);
@@ -377,12 +416,21 @@ function buildProfitMatrix(
   }
 
   const cells: HeatmapCell[] = [];
+  const flat: ProfitMatrixRow[] = [];
   for (const [key, r] of idx) {
     for (let c = 0; c < nCat; c++) {
       const cell = r * nCat + c;
       if (lineGrid[cell] === 0) continue;
       const profit = grid[cell];
       const sales = salesGrid[cell];
+      flat.push({
+        country: ds.dims.countries[key].name,
+        category: ds.dims.categories[c],
+        sales,
+        profit,
+        margin: sales > 0 ? profit / sales : null,
+        lines: lineGrid[cell],
+      });
       cells.push({
         row: key,
         col: c,
@@ -419,6 +467,7 @@ function buildProfitMatrix(
     rows: ranked.map((c) => ({ key: c.key, label: c.label, total: c.current.profit })),
     cols: categories.map((c) => ({ key: c.key, label: c.label, total: c.current.profit })),
     cells,
+    flat,
   };
 }
 

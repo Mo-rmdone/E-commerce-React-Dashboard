@@ -47,10 +47,11 @@ export const PAGE_META: Record<
   customers: {
     index: 3,
     nav: 'Customers',
-    title: 'Customer insights & market deep-dive',
-    question: 'Who are the highest-value customers, and how are their markets evolving?',
+    title: 'Commercial Performance & Value Drivers',
+    question:
+      'Who creates value, where are we losing profitability, and which customers need action?',
     icon: Users,
-    hint: 'High-value accounts and markets',
+    hint: 'Value, concentration and risk',
   },
 };
 

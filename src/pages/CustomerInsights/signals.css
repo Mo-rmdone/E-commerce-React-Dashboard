@@ -1,0 +1,215 @@
+/* ---------------------------------------------------------- strategic signals */
+
+/*
+ * A prioritised list, not a stack of cards. Each row is a severity dot, a
+ * title, its number and one clamped line of why — enough to decide whether to
+ * follow it, and no more, so the flow diagram beside it stays dominant.
+ */
+
+.signals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  height: 100%;
+  min-height: 0;
+}
+
+/*
+ * flex-basis 0, not auto. With `auto` the list's full content height propagates
+ * up through the card and sets the grid row, which pushed the ten-row table
+ * beside it to 104px rows to match. At 0 the card's intrinsic height is the
+ * score plus the decisions, the table becomes the taller of the pair and
+ * therefore the one that sets the row, and the list takes exactly the space
+ * that leaves — scrolling when the findings run longer than it.
+ */
+.signals__list {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  /* A floor, so the findings are never squeezed to a sliver by the blocks
+     above and below them. Below this the card grows and takes the table with
+     it; above it, the list scrolls. */
+  min-height: 300px;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.signal {
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--c-rule-soft);
+}
+.signal:first-child {
+  padding-top: 0;
+}
+.signal:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.signal__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-3);
+}
+
+.signal__sev {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.signal__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentcolor;
+  flex: none;
+}
+
+.signal--critical .signal__sev { color: var(--c-neg); }
+.signal--warning .signal__sev { color: var(--c-warn); }
+.signal--opportunity .signal__sev { color: var(--c-accent); }
+.signal--positive .signal__sev { color: var(--c-pos); }
+
+.signal__metric {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--c-ink);
+  white-space: nowrap;
+}
+
+.signal__title {
+  margin-top: 2px;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: var(--ls-tight);
+  color: var(--c-ink);
+}
+
+/* Shown whole. Truncating the sentence that explains a critical finding saves
+   two lines and costs the reason the finding exists. */
+.signal__detail {
+  margin-top: 2px;
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+  color: var(--c-muted);
+}
+
+/* The numbers are the finding; the prose is the frame around them. */
+.signal__figure {
+  color: var(--c-ink);
+  font-weight: 600;
+}
+
+.signal__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 3px;
+  margin-left: -4px;
+  padding: 2px 4px;
+  border-radius: var(--r-xs);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-accent);
+}
+.signal__action:hover {
+  background: var(--c-accent-soft);
+}
+
+.signals__more {
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--c-rule-soft);
+  font-size: var(--fs-micro);
+  color: var(--c-faint);
+}
+
+.signals__none {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: var(--sp-4);
+  font-size: var(--fs-sm);
+  color: var(--c-pos);
+  background: var(--c-pos-soft);
+  border-radius: var(--r-sm);
+}
+
+/* ------------------------------------------------------------- decisions */
+
+/*
+ * The page's conclusion, pinned under the signals in the same card: the
+ * signals say what is happening, these three say what to do about it. Kept
+ * compact and unpadded so they read as a footer to the list above, not as a
+ * second list competing with it.
+ */
+.decisions {
+  flex: none;
+  margin-top: var(--sp-2);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--c-rule);
+}
+.decisions__list {
+  gap: 5px;
+}
+.decisions__label {
+  margin-bottom: var(--sp-2);
+}
+.decisions__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.decision {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 1px var(--sp-2);
+  padding: 5px var(--sp-3);
+  background: var(--c-surface-2);
+  border-radius: var(--r-sm);
+}
+
+.decision__kicker {
+  font-size: var(--fs-micro);
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.decision--protect .decision__kicker { color: var(--c-neg); }
+.decision--grow .decision__kicker { color: var(--c-accent); }
+.decision--scale .decision__kicker { color: var(--c-pos); }
+
+.decision__kicker {
+  grid-row: 1 / span 2;
+}
+.decision__metric {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.decision__metric .num {
+  font-size: var(--fs-md);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--c-ink);
+}
+.decision__unit {
+  font-size: var(--fs-micro);
+  color: var(--c-muted);
+}
+
+/* Never truncated. A decision that ends in an ellipsis is not a decision, and
+   the panel now has the width to carry the whole sentence. */
+.decision__detail {
+  font-size: var(--fs-micro);
+  line-height: 1.45;
+  color: var(--c-muted);
+}

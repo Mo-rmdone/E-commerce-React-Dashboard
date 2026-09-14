@@ -202,3 +202,20 @@
   --sh-3: 0 2px 6px rgba(0, 0, 0, 0.45), 0 16px 40px -16px rgba(0, 0, 0, 0.7);
   --sh-pop: 0 4px 12px rgba(0, 0, 0, 0.5), 0 20px 48px -16px rgba(0, 0, 0, 0.8);
 }
+
+/*
+ * Gutters are a token, not a page rule, so they step down in one place and
+ * every page follows. On a phone a 32px gutter costs a sixth of the screen —
+ * width the cards need more than the margin does.
+ */
+@media (max-width: 1240px) {
+  :root {
+    --pad-page-x: 24px;
+  }
+}
+@media (max-width: 640px) {
+  :root {
+    --pad-page-x: 14px;
+    --pad-card: 14px;
+  }
+}

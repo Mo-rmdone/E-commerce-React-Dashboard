@@ -4,10 +4,12 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "pipeline": "python data-pipeline/run_pipeline.py",
     "etl": "node scripts/build-dataset.mjs",
+    "data": "npm run pipeline && npm run etl",
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "build:full": "npm run etl && npm run build",
+    "build:full": "npm run data && npm run build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "deploy": "npm run build && wrangler deploy",

@@ -28,6 +28,27 @@ export interface HeatmapAxis {
   total: number;
 }
 
+/**
+ * Three states, not a ramp: above the target, within `nearBand` of it, or
+ * clearly below. Values arrive as a variance against the target, so zero is the
+ * target line.
+ */
+type Band = 'above' | 'near' | 'below';
+
+function bandOf(variance: number, nearBand: number): Band {
+  if (variance >= 0) return 'above';
+  return variance >= -nearBand ? 'near' : 'below';
+}
+
+const SEMANTIC_BASE: Record<Band, string> = {
+  above: 'var(--c-pos)',
+  near: 'var(--c-warn)',
+  below: 'var(--c-neg)',
+};
+/** Flat fills — the band already carries the meaning, so intensity would only
+    add a second, weaker signal on top of it. */
+const SEMANTIC_ALPHA: Record<Band, number> = { above: 0.6, near: 0.58, below: 0.66 };
+
 export function Heatmap({
   rows,
   cols,
@@ -39,6 +60,13 @@ export function Heatmap({
   onSelectCol,
   onSelectCell,
   rowLabelWidth = 132,
+  rowLabelChars = 18,
+  cornerLabel = 'Country',
+  rowNoun = 'countries',
+  scale = 'diverging',
+  nearBand = 0.05,
+  size = 'md',
+  fill = false,
   page,
   pageCount,
   rangeLabel,
@@ -54,6 +82,27 @@ export function Heatmap({
   onSelectCol: (key: number) => void;
   onSelectCell?: (row: number, col: number) => void;
   rowLabelWidth?: number;
+  /** How many characters a row label is truncated to. */
+  rowLabelChars?: number;
+  /** Header above the row labels — "Country" by default, but the matrix is
+      reused for other row dimensions (e.g. "Category"). */
+  cornerLabel?: string;
+  /** Plural noun for the rows, used in the sort controls' labels. */
+  rowNoun?: string;
+  /**
+   * `diverging` ramps continuously either side of zero — good for reading
+   * magnitude. `semantic` buckets into three states instead (at/above target,
+   * near it, below it), which is what a diagnosis grid wants: the question is
+   * "is this combination acceptable", not "by how much".
+   */
+  scale?: 'diverging' | 'semantic';
+  /** How far below zero still counts as "near target" on the semantic scale. */
+  nearBand?: number;
+  /** `lg` gives the cells more height and a larger figure, for a hero matrix. */
+  size?: 'md' | 'lg';
+  /** Stretch the grid to the card's height, so a matrix sharing a row with a
+      taller chart fills its half instead of leaving the card part-empty. */
+  fill?: boolean;
   /** Zero-based page index; enables the footer pager when pageCount > 1. */
   page?: number;
   pageCount?: number;
@@ -99,13 +148,13 @@ export function Heatmap({
   }
 
   return (
-    <div className="heat">
+    <div className={`heat${size === 'lg' ? ' heat--lg' : ''}${fill ? ' heat--fill' : ''}`}>
       <div className="heat__scroll">
         <table className="heat__table">
           <thead>
             <tr>
               <th className="heat__corner" scope="col">
-                <span className="label">Country</span>
+                <span className="label">{cornerLabel}</span>
               </th>
               {cols.map((c) => (
                 <th key={c.key} scope="col" className="heat__colhead">
@@ -122,7 +171,7 @@ export function Heatmap({
                     <button
                       type="button"
                       className="heat__sort"
-                      aria-label={`Sort countries by ${c.label}`}
+                      aria-label={`Sort ${rowNoun} by ${c.label}`}
                       aria-pressed={sortCol === c.key}
                       onClick={() => setSortCol((s) => (s === c.key ? null : c.key))}
                     >
@@ -150,14 +199,25 @@ export function Heatmap({
                       style={{ maxWidth: rowLabelWidth }}
                       title={`Filter to ${r.label}`}
                     >
-                      {truncate(r.label, 18)}
+                      {truncate(r.label, rowLabelChars)}
                     </button>
                   </th>
                   {cols.map((c) => {
                     const cell = grid.map.get(`${r.key}:${c.key}`);
                     const v = cell?.value ?? 0;
-                    const alpha = v >= 0 ? grid.pos(v) : grid.neg(v);
-                    const base = v >= 0 ? 'var(--c-pos)' : 'var(--c-neg)';
+                    const band = bandOf(v, nearBand);
+                    const alpha =
+                      scale === 'semantic'
+                        ? SEMANTIC_ALPHA[band]
+                        : v >= 0
+                          ? grid.pos(v)
+                          : grid.neg(v);
+                    const base =
+                      scale === 'semantic'
+                        ? SEMANTIC_BASE[band]
+                        : v >= 0
+                          ? 'var(--c-pos)'
+                          : 'var(--c-neg)';
                     return (
                       <td key={c.key} className="heat__cell">
                         <motion.button

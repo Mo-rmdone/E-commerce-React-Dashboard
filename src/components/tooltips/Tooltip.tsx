@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
-import type { ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { CheckCircle2, AlertTriangle, XCircle, Minus } from 'lucide-react';
 import type { StatusLevel } from '@/config/targets';
 import './tooltip.css';
@@ -118,9 +118,36 @@ function placement({ x, y }: TooltipPosition): React.CSSProperties {
 }
 
 /** Small inline explainer used on card headers. */
+/** Matches the panel width in tooltip.css; used to decide which way it opens. */
+const INFODOT_PANEL_W = 250;
+
 export function InfoDot({ children, label }: { children: ReactNode; label: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [flip, setFlip] = useState(false);
+
+  // The panel is laid out even while hidden, so a dot near the right edge
+  // widens the scroll area of the whole page before anyone opens it. Measure
+  // the dot instead and open leftwards when the panel would not fit.
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => {
+      const r = el.getBoundingClientRect();
+      setFlip(r.left - 8 + INFODOT_PANEL_W > window.innerWidth - 12);
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
+
   return (
-    <span className="infodot" tabIndex={0} role="note" aria-label={label}>
+    <span
+      ref={ref}
+      className={`infodot${flip ? ' infodot--end' : ''}`}
+      tabIndex={0}
+      role="note"
+      aria-label={label}
+    >
       <span className="infodot__mark" aria-hidden>
         i
       </span>

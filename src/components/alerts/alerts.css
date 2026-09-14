@@ -15,6 +15,50 @@
   padding-right: 2px;
 }
 
+/*
+ * Full-width placement. As a closing band under the page the same cards read
+ * better in columns than in a tall rail, and the health block turns sideways so
+ * the dial, the verdict and the four component bars share one line.
+ */
+.alerts--wide .alerts__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(264px, 1fr));
+  align-items: start;
+  gap: var(--sp-3);
+  overflow: visible;
+}
+.alerts--wide .health {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'header header'
+    'main   parts'
+    'main   note';
+  align-items: center;
+  column-gap: var(--sp-6);
+  row-gap: var(--sp-2);
+}
+.alerts--wide .health__header { grid-area: header; }
+.alerts--wide .health__main { grid-area: main; }
+.alerts--wide .health__parts {
+  grid-area: parts;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 3px var(--sp-5);
+  margin-top: 0;
+}
+.alerts--wide .health__note {
+  grid-area: note;
+  margin-top: 0;
+}
+
+@media (max-width: 760px) {
+  .alerts--wide .health {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: 'header' 'main' 'parts' 'note';
+  }
+}
+
 .alerts__none {
   display: flex;
   align-items: center;

@@ -1,0 +1,34 @@
+/* ------------------------------------------------------------ level sankey */
+
+.lsankey {
+  width: 100%;
+}
+
+.lsankey__header {
+  font-family: var(--font-sans);
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  fill: var(--c-accent);
+  letter-spacing: var(--ls-tight);
+}
+.lsankey__rule {
+  stroke: var(--c-accent-line);
+  stroke-width: 1.5;
+}
+
+.lsankey__label {
+  font-family: var(--font-sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  fill: var(--c-ink);
+}
+.lsankey__label--sel {
+  fill: var(--c-accent);
+}
+.lsankey__value {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  fill: var(--c-muted);
+  font-variant-numeric: tabular-nums;
+}

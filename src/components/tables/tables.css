@@ -128,5 +128,9 @@
   white-space: nowrap;
 }
 
+/* Column drop-out buckets. A column only hides if its bucket exists here, so
+   every `hideBelow` value used in a page must appear in this list. */
+@media (max-width: 1600px) { .dt__hide-1600 { display: none; } }
 @media (max-width: 1440px) { .dt__hide-1440 { display: none; } }
 @media (max-width: 1280px) { .dt__hide-1280 { display: none; } }
+@media (max-width: 1100px) { .dt__hide-1100 { display: none; } }

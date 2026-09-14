@@ -287,6 +287,64 @@
 .heat__cellbtn:hover {
   outline-color: var(--c-ink);
 }
+/* Sharing a row with a taller chart: the grid stretches the card, and these
+   rules pass that height down to the rows so the cells grow instead of the
+   card ending in white space. */
+.heat--fill,
+.heat--fill .heat__scroll,
+.heat--fill .heat__table {
+  height: 100%;
+}
+.heat--fill .heat__table {
+  /* Header keeps its natural height; the body rows share what is left. */
+  height: 100%;
+}
+
+/* Hero placement: the matrix is the diagnosis, so its cells get the room to be
+   read across a boardroom rather than squinted at. */
+.heat--lg .heat__table {
+  border-spacing: 4px;
+  font-size: var(--fs-sm);
+  /* Only three segment columns plus a total here, so the 560px floor the
+     country matrix needs would force a scrollbar it does not. The floor is set
+     just under the narrowest card this matrix is given, measured, so the grid
+     never scrolls sideways inside its own card. */
+  min-width: 356px;
+}
+.heat--lg .heat__cellbtn {
+  height: 100%;
+  padding: 16px 6px;
+  border-radius: var(--r-sm);
+  font-size: var(--fs-md);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.heat--lg .heat__rowbtn {
+  font-size: var(--fs-sm);
+  padding: 4px 6px;
+  /* Category names are content, not labels: "Home and Accessories" wraps to a
+     second line rather than losing half of itself to an ellipsis. */
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  line-height: 1.25;
+}
+.heat--lg .heat__corner {
+  vertical-align: bottom;
+}
+.heat--lg .heat__colbtn {
+  font-size: var(--fs-xs);
+}
+.heat--lg .heat__corner {
+  width: 124px;
+}
+.heat--lg .heat__total {
+  width: 74px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--c-ink-2);
+}
+
 .heat__total {
   width: 72px;
   font-size: var(--fs-micro);
@@ -490,4 +548,13 @@
 }
 .dtree__expand--on {
   fill: var(--c-accent);
+}
+
+/* Small panel label for stacked split charts. */
+.chart-panel-title {
+  font-size: var(--fs-micro);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  fill: var(--c-muted);
 }
