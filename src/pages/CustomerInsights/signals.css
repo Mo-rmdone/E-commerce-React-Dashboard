@@ -14,8 +14,8 @@
   min-height: 0;
 }
 
-/* Severity tabs. Counts live in the labels, so the row doubles as the summary
-   of what the panel holds — four criticals is legible without opening the tab. */
+/* Severity tabs. The count lives in each tab's tooltip rather than its label:
+   on a panel this narrow the row reads better as four plain words. */
 .signals__tabs {
   flex: none;
   padding-bottom: var(--sp-2);

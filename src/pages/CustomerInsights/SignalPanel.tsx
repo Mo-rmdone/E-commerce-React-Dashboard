@@ -12,9 +12,9 @@ import './signals.css';
  * Severity is a tab rather than a sort order. Stacked into a single list the
  * six findings ran past the height of the card and the panel scrolled, which
  * hid the low-severity ones behind a gesture nobody makes; split by severity
- * each view is one or two findings and the counts sit on the tabs, so nothing
- * is hidden and nothing scrolls. There is deliberately no "All": it would be
- * the scrolling list this replaced.
+ * each view is one or two findings and nothing scrolls. The count stays in each
+ * tab's tooltip rather than its label, which keeps the row quiet. There is
+ * deliberately no "All": it would be the scrolling list this replaced.
  */
 
 /**
@@ -73,7 +73,7 @@ export function SignalPanel({
   const tabs = SEVERITY_ORDER.filter((sev) => signals.some((s) => s.severity === sev)).map(
     (sev) => ({
       value: sev,
-      label: `${SEVERITY_WORD[sev]} ${signals.filter((s) => s.severity === sev).length}`,
+      label: SEVERITY_WORD[sev],
       title: `${signals.filter((s) => s.severity === sev).length} ${SEVERITY_WORD[sev].toLowerCase()} ${
         signals.filter((s) => s.severity === sev).length === 1 ? 'signal' : 'signals'
       }`,
