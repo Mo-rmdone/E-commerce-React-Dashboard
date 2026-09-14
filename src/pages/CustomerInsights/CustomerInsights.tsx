@@ -27,7 +27,7 @@ import { DataTable, type Column } from '@/components/tables/DataTable';
 import { Heatmap } from '@/components/charts/Heatmap';
 import { LevelSankey } from '@/components/charts/LevelSankey';
 import { CustomerConcentration } from '@/components/charts/CustomerConcentration';
-import { HealthDial } from '@/components/alerts/HealthDial';
+import { HealthDial } from '@/components/cards/HealthDial';
 import { SignalPanel } from './SignalPanel';
 import { categorical } from '@/config/theme';
 import { int, pct, pctSigned, ppSigned, truncate, usd, usdShort } from '@/utils/format';
