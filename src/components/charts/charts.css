@@ -183,11 +183,13 @@
      whether its cells read $4K or $77.2K. Without it the table sizes each
      column to its widest number and the boxes come out uneven. */
   table-layout: fixed;
-  min-width: 560px;
+  /* Floor sized to the narrowest card this matrix is given, measured: above it
+     the grid scrolled sideways inside its own card. */
+  min-width: 420px;
   font-size: var(--fs-xs);
 }
 .heat__corner {
-  width: 120px;
+  width: 108px;
   text-align: left;
   padding: 0 var(--sp-2) var(--sp-1) 0;
   position: sticky;
@@ -346,7 +348,7 @@
 }
 
 .heat__total {
-  width: 72px;
+  width: 64px;
   font-size: var(--fs-micro);
   color: var(--c-muted);
   text-align: center;

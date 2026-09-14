@@ -407,7 +407,13 @@
 
 /* -------------------------------------------------------- responsive */
 
-@media (max-width: 1180px) {
+/*
+ * The rail collapses to icons well before tablet width. At 1280 — an ordinary
+ * laptop — a 248px nav was taking a fifth of the screen from a dashboard whose
+ * cards are already two-up, which left the country matrix too narrow to draw
+ * without scrolling sideways inside its own card.
+ */
+@media (max-width: 1400px) {
   .shell {
     grid-template-columns: var(--rail-w-collapsed) minmax(0, 1fr);
   }

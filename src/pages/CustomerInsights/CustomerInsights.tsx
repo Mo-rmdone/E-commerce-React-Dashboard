@@ -197,22 +197,24 @@ export function CustomerInsights({
           <Delta value={r.growth} format={(v) => pctSigned(v, 0)} />
         ),
     },
+    // Status and Action are the same judgement said twice — one as a state, one
+    // as an instruction — so neither offers a sort: ordering customers by an
+    // alphabetised label is not a question anyone asks, and the control costs
+    // width the table does not have.
     {
       id: 'status',
       header: 'Risk / Status',
-      align: 'right',
-      width: '128px',
-      sortValue: (r) => r.status,
+      align: 'center',
+      width: '124px',
       render: (r) => (
         <span className={`chip chip--${STATUS_TONE[r.status]}`}>{STATUS_LABEL[r.status]}</span>
       ),
     },
     {
       id: 'action',
-      header: 'Recommended action',
-      align: 'right',
-      width: '124px',
-      sortValue: (r) => r.action,
+      header: 'Action',
+      align: 'center',
+      width: '96px',
       render: (r) => (
         <span className="cust__action" title={ACTION_RATIONALE[r.action]}>
           {r.action}

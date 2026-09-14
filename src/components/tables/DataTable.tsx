@@ -19,7 +19,7 @@ export interface Column<T> {
   /** Value used for sorting. Strings sort lexically, numbers numerically. */
   sortValue?: (row: T) => number | string;
   render: (row: T, index: number) => ReactNode;
-  align?: 'left' | 'right';
+  align?: 'left' | 'center' | 'right';
   width?: string;
   /** Column is hidden below this viewport width, to keep the table readable. */
   hideBelow?: number;
